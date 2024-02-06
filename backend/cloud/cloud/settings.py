@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'cloud_api.apps.CloudApiConfig',
 ]
 
@@ -112,7 +113,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = os.getenv('LANGUAGE_CODE')
 
 TIME_ZONE = 'UTC'
 
@@ -126,7 +127,17 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+
+# Media files
+
+MEDIA_URL = f'/{os.getenv('CLOUD_DIR')}/'
+MEDIA_ROOT = os.path.join(BASE_DIR, os.getenv('CLOUD_DIR'))
+
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Add custom user
+AUTH_USER_MODEL = 'cloud_api.CloudUser'
