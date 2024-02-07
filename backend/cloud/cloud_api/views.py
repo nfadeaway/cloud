@@ -94,7 +94,6 @@ class FileAPIDownload(generics.RetrieveAPIView):
             return Response({'detail': 'Файл не найден'}, status=404)
 
 
-# TODO
 # class DownloadFileView(APIView):
 #
 #     def get(self, request, *args, **kwargs):
