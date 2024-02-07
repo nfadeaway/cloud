@@ -13,7 +13,7 @@ class CloudUser(AbstractUser):
 
 
 class File(models.Model):
-    cloud_user = models.ForeignKey(CloudUser, on_delete=models.CASCADE)
+    cloud_user = models.ForeignKey(CloudUser, on_delete=models.CASCADE, related_name='files')
     filename = models.CharField(max_length=100, blank=True)
     size = models.IntegerField(blank=True)
     comment = models.CharField(max_length=255, blank=True)

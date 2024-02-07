@@ -141,3 +141,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Add custom user
 AUTH_USER_MODEL = 'cloud_api.CloudUser'
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ]
+}
+
+CSRF_TRUSTED_ORIGINS = ['https://127.0.0.1', 'https://127.0.0.1']
