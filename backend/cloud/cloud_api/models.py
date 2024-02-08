@@ -19,7 +19,7 @@ class File(models.Model):
     comment = models.CharField(max_length=255, blank=True)
     date_uploaded = models.DateTimeField(auto_now_add=True)
     last_download = models.DateTimeField(null=True)
-    external_link = models.URLField(blank=True)
+    external_link_key = models.URLField(blank=True)
     content = models.FileField(upload_to=get_user_directory_path)
 
     def __str__(self):

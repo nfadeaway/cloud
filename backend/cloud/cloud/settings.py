@@ -41,8 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
     'cloud_api.apps.CloudApiConfig',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -143,11 +143,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'cloud_api.CloudUser'
 
 
+# DRF settings
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ]
 }
+
 
 CSRF_TRUSTED_ORIGINS = ['https://127.0.0.1', 'https://127.0.0.1']

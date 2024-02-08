@@ -8,12 +8,12 @@ from rest_framework import viewsets, generics
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from cloud.settings import MEDIA_ROOT
 from .models import CloudUser, File
 from .permissions import IsAdmin, IsAdminOrUser, IsAdminOrFileOwner
 from .serializers import CloudUserSerializer, FileSerializer, CloudUsersDetailSerializer
+from .utils import generate_external_link_key
 
 
 class CloudUserAPICreate(generics.CreateAPIView):
@@ -79,9 +79,9 @@ class FileAPIDownload(generics.RetrieveAPIView):
         pk = kwargs.get('pk')
         try:
             file = self.queryset.get(pk=pk)
-            self.check_object_permissions(request, file)
         except ObjectDoesNotExist:
             raise NotFound(detail=f'Запись о файле c id {pk} не найдена в базе данных')
+        self.check_object_permissions(request, file)
         file_path = f'{MEDIA_ROOT}/{file.content}'
         if os.path.exists(file_path):
             # file = open(file_path, 'rb')
@@ -92,6 +92,55 @@ class FileAPIDownload(generics.RetrieveAPIView):
             return response
         else:
             return Response({'detail': 'Файл не найден'}, status=404)
+
+
+class FileAPIExternalDownload(generics.RetrieveAPIView):
+    queryset = File.objects.all()
+    serializer_class = FileSerializer
+
+    def get(self, request, *args, **kwargs):
+        link_key = kwargs.get('link_key')
+        try:
+            file = self.queryset.get(external_link_key=link_key)
+        except ObjectDoesNotExist:
+            raise NotFound(detail=f'Запись о файле c ключом {link_key} не найдена в базе данных')
+        file_path = f'{MEDIA_ROOT}/{file.content}'
+        if os.path.exists(file_path):
+            # file = open(file_path, 'rb')
+            response = FileResponse(open(file_path, 'rb'))
+            response['Content-Disposition'] = f'attachment; filename="{file}"'
+            file.last_download = timezone.now()
+            file.save()
+            return response
+        else:
+            return Response({'detail': 'Файл не найден'}, status=404)
+
+
+class FileAPICreateExternalLink(generics.RetrieveAPIView):
+    queryset = File.objects.all()
+    serializer_class = FileSerializer
+    permission_classes = [IsAdminOrFileOwner]
+
+    def get(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        try:
+            file = self.queryset.get(pk=pk)
+        except ObjectDoesNotExist:
+            raise NotFound(detail=f'Запись о файле c id {pk} не найдена в базе данных')
+        self.check_object_permissions(request, file)
+        for i in range(25):
+            external_link_key = generate_external_link_key()
+            if File.objects.filter(external_link_key=external_link_key).exists():
+                continue
+            else:
+                file.external_link_key = external_link_key
+                file.save()
+                return self.retrieve(request, *args, **kwargs)
+        else:
+            return Response({'detail': 'Не удалось создать ключ внешней ссылки, обратитесь к администратору'}, status=500)
+
+
+
 
 
 # class DownloadFileView(APIView):
