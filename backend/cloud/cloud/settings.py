@@ -152,5 +152,7 @@ REST_FRAMEWORK = {
     ]
 }
 
+# LOGIN_REDIRECT_URL = None
+# LOGOUT_REDIRECT_URL = None
 
-CSRF_TRUSTED_ORIGINS = ['https://127.0.0.1', 'https://127.0.0.1']
+CSRF_TRUSTED_ORIGINS = ['https://127.0.0.1']

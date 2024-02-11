@@ -1,13 +1,17 @@
 import os
 
+from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.hashers import make_password
-from django.http import FileResponse
+from django.http import FileResponse, JsonResponse
+from django.middleware.csrf import get_token
 from django.utils import timezone
-from rest_framework import viewsets, generics
+from rest_framework import viewsets, generics, status
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from cloud.settings import MEDIA_ROOT
 from .models import CloudUser, File
@@ -24,6 +28,50 @@ class CloudUserAPICreate(generics.CreateAPIView):
         username = serializer.validated_data['username']
         password = make_password(serializer.validated_data['password'])
         serializer.save(storage_directory=username, password=password, is_staff=True, is_active=True)
+
+
+class UserLoginAPIView(APIView):
+    def post(self, request, format=None):
+        if request.user.is_authenticated:
+            return Response({'detail': 'Пользователь уже аутентифицирован.'}, status=status.HTTP_200_OK)
+        else:
+            username = request.data.get('username')
+            password = request.data.get('password')
+        if username is None or password is None:
+            return Response({'detail': 'Укажите логин и пароль.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = authenticate(username=username, password=password)
+
+        if user is None:
+            return Response({'detail': 'Неверные данные.'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            login(request, user)
+            return Response({'detail': 'Успешный вход в систему.'}, status=status.HTTP_200_OK)
+
+
+class UserLogoutAPIView(APIView):
+    def post(self, request, format=None):
+        if not request.user.is_authenticated:
+            return Response({'detail': 'Пользователь не аутентифицирован'}, status=status.HTTP_400_BAD_REQUEST)
+
+        logout(request)
+        return Response({'detail': 'Успешный выход из системы.'}, status=status.HTTP_200_OK)
+
+
+class SessionView(APIView):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @staticmethod
+    def get(request, format=None):
+        return Response({'detail': 'Пользователь успешно аутентифицирован.'}, status=status.HTTP_200_OK)
+
+
+class CSRFTokenView(APIView):
+    @staticmethod
+    def get(request, format=None):
+        get_token(request)
+        return Response({'success': 'CSRF cookie установлены'})
 
 
 class CloudUserAPIRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
@@ -137,75 +185,5 @@ class FileAPICreateExternalLink(generics.RetrieveAPIView):
                 file.save()
                 return self.retrieve(request, *args, **kwargs)
         else:
-            return Response({'detail': 'Не удалось создать ключ внешней ссылки, обратитесь к администратору'}, status=500)
-
-
-
-
-
-# class DownloadFileView(APIView):
-#
-#     def get(self, request, *args, **kwargs):
-#         file_path = f'${MEDIA_ROOT}/admin/django.docx'
-#         if os.path.exists(file_path):
-#             file = open(file_path, 'rb')
-#             response = FileResponse(file)
-#             response['Content-Disposition'] = 'attachment; filename="django.docx"'
-#             return response
-#         else:
-#             return Response({'error': 'Файл не найден'}, status=404)
-
-#
-#
-# class CloudUserViewSet(viewsets.ModelViewSet):
-#     serializer_class = CloudUserSerializer
-#     queryset = CloudUser.objects.all()
-#
-#     def get_permissions(self):
-#         if self.action == 'list':
-#             self.permission_classes = [IsAdmin]
-#         elif self.action == 'retrieve':
-#             self.permission_classes = [IsAdminOrUser]
-#         elif self.action == 'update':
-#             self.permission_classes = [IsAdminOrUser]
-#         elif self.action == 'partial_update':
-#             self.permission_classes = [IsAdminOrUser]
-#         elif self.action == 'destroy':
-#             self.permission_classes = [IsAdmin]
-#         return [permission() for permission in self.permission_classes]
-#
-#     def perform_create(self, serializer):
-#         username = serializer.validated_data['username']
-#         password = make_password(serializer.validated_data['password'])
-#         serializer.save(storage_directory=username, password=password, is_staff=True, is_active=True)
-#
-#
-# class FileViewSet(viewsets.ModelViewSet):
-#     serializer_class = FileSerializer
-#     queryset = File.objects.all()
-#
-#     def get_permissions(self):
-#         if self.action == 'list':
-#             self.permission_classes = [IsAdmin]
-#         if self.action == 'create':
-#             self.permission_classes = [IsAuthenticated]
-#         elif self.action == 'retrieve':
-#             self.permission_classes = [IsAdminOrFileOwner]
-#         elif self.action == 'update':
-#             self.permission_classes = [IsAdminOrFileOwner]
-#         elif self.action == 'partial_update':
-#             self.permission_classes = [IsAdminOrFileOwner]
-#         elif self.action == 'destroy':
-#             self.permission_classes = [IsAdminOrFileOwner]
-#         return [permission() for permission in self.permission_classes]
-#
-#     def perform_create(self, serializer):
-#         uploaded_file_name = serializer.validated_data['content'].name
-#         uploaded_file_size = serializer.validated_data['content'].size
-#         serializer.save(filename=uploaded_file_name, size=uploaded_file_size)
-#
-#     def perform_destroy(self, instance):
-#         storage = instance.content.storage
-#         path = instance.content.path
-#         instance.delete()
-#         storage.delete(path)
+            return Response({'detail': 'Не удалось создать ключ внешней ссылки, обратитесь к администратору'},
+                            status=500)
