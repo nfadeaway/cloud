@@ -6,10 +6,11 @@ from .models import CloudUser, File
 
 
 class CloudUserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
 
     class Meta:
         model = CloudUser
-        fields = '__all__'
+        fields = ['username', 'password', 'email']
 
     def validate_username(self, value):
         """
@@ -18,7 +19,7 @@ class CloudUserSerializer(serializers.ModelSerializer):
         """
         pattern = r'^[a-zA-Z][a-zA-Z0-9]{3,19}$'
         if not re.fullmatch(pattern, value):
-            raise serializers.ValidationError('Логин не соответствует правилам')
+            raise serializers.ValidationError('Логин не соответствует правилам.')
         return value
 
     def validate_password(self, value):
@@ -28,7 +29,7 @@ class CloudUserSerializer(serializers.ModelSerializer):
         """
         pattern = r'^(?=.*[A-Z])(?=.*\d)(?=.*[\W\_]).{6,}$'
         if not re.fullmatch(pattern, value):
-            raise serializers.ValidationError('Пароль не соответствует правилам')
+            raise serializers.ValidationError('Пароль не соответствует правилам.')
         return value
 
 

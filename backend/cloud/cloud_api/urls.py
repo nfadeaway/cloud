@@ -8,7 +8,7 @@ urlpatterns = [
     path('api/login/', UserLoginAPIView.as_view()),
     path('api/logout/', UserLogoutAPIView.as_view()),
     path('api/session/', SessionView.as_view()),
-    path('api/getcsrf/', CSRFTokenView.as_view()),
+    path('api/csrf/', CSRFTokenView.as_view()),
 
     path('api/users/', CloudUserAPIList.as_view()),
     path('api/users/registration/', CloudUserAPICreate.as_view()),

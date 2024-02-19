@@ -70,8 +70,8 @@ class SessionView(APIView):
 class CSRFTokenView(APIView):
     @staticmethod
     def get(request, format=None):
-        get_token(request)
-        return Response({'success': 'CSRF cookie установлены'})
+        csrf_token = get_token(request)
+        return Response({'csrf': csrf_token})
 
 
 class CloudUserAPIRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
