@@ -5,24 +5,37 @@ import { CloudContext } from './contexts/CloudContext.js'
 import Login from './components/login/Login.jsx'
 
 import './App.scss'
+import Dashboard from './components/dashboard/Dashboard.jsx'
+import PrivateRoutes from './utils/PrivateRoutes.jsx'
+import Main from './components/main/Main.jsx'
+import Header from './components/header/Header.jsx'
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [username, setUsername] = useState(null)
+  const [userID, setUserID] = useState(null)
+  const [CSRF ,setCSRF] = useState(null)
+  const [serverError, setServerError] = useState(null)
 
-  // const [productDetailCard, setProductDetailCard] = useState('loading');
-  // const [cartProducts, setCartProducts] = useState([]);
-  // const [totalCartCount, setTotalCartCount] = useState(0);
-  // const [totalCost, setTotalCost] = useState(0);
-  // const [sendOrderFlag, setSendOrderFlag] = useState('no loading');
 
   return (
     <CloudContext.Provider value={{
-      isAuthenticated, setIsAuthenticated
+      isAuthenticated, setIsAuthenticated,
+      CSRF ,setCSRF,
+      serverError, setServerError,
+      username, setUsername,
+      userID, setUserID
     }}>
+      <Header />
       <Routes>
-        <Route path="/" element={<Registration />} />
-        <Route path="/registration" element={<Registration />} />
+        <Route path="/" element={<Main/>} />
         <Route path="/login" element={<Login />} />
+        <Route path="/registration" element={<Registration />} />
+        <Route element={<PrivateRoutes />}>
+          <Route path="/dashboard" element={<Dashboard />} exact />
+        </Route>
+
+        {/*<Route path="*" component={NotFoundSection} path='*' />*/}
       </Routes>
     </CloudContext.Provider>
   )
