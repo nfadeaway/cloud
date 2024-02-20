@@ -3,14 +3,14 @@ import { useContext, useEffect, useRef, useState } from 'react'
 import { CloudContext } from '../../contexts/CloudContext'
 
 import './Login.scss'
-import getCSRFToken from '../../utils/getCSRFToken'
 import Loader from '../common/Loader/Loader.jsx'
 import SystemMessage from '../common/SystemMessage/SystemMessage.jsx'
+import getData from '../../utils/getData.js'
 
 
 const Login = () => {
 
-  const {isAuthenticated, setIsAuthenticated, serverError, setServerError} = useContext(CloudContext)
+  const {isAuthenticated, setIsAuthenticated, serverError, setServerError, setUsername, setUserID} = useContext(CloudContext)
 
   const usernameInput = useRef(null)
   const passwordInput = useRef(null)
@@ -21,29 +21,16 @@ const Login = () => {
 
   const navigate = useNavigate()
 
-
-
-  const checkSession = async () => {
-    const { sessionAuth, sessionError } = await getSession()
-    console.log({sessionAuth, sessionError})
-    if (sessionAuth) {
-      setIsAuthenticated(true)
-    }
-    sessionError && setServerError(true)
+  const getCSRF = async () => {
+    return await getData('/api/csrf/')
   }
 
-  const checkCSRF = async () => {
-    // const { CSRFToken, CSRFError } = await getCSRFToken()
-    // console.log({CSRFToken, CSRFError})
-    return await getCSRFToken()
-  }
-
-  const loginUserRequest = async (e) => {
+  const login = async (e) => {
     e.preventDefault()
 
-    const { CSRFToken, CSRFError } = await checkCSRF()
-    console.log(CSRFToken, CSRFError)
-    if (!CSRFError && CSRFToken) {
+    const { statusCode, data, error } = await getCSRF()
+    console.log('Получаем при логине CSRF токен -', statusCode, data, error)
+    if (statusCode === 200) {
       setLoading(true)
       try {
         const response = await fetch(
@@ -53,7 +40,7 @@ const Login = () => {
             credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              'X-CSRFToken': CSRFToken,
+              'X-CSRFToken': data.csrf,
             },
             body: JSON.stringify(
               {
@@ -67,6 +54,11 @@ const Login = () => {
         const result = await response.json()
         setData({status: statusCode, result})
         console.log(result)
+        if (statusCode === 200) {
+          console.log('Устанавливаем данные пользователя в Login', result.username, result.userID)
+          setUsername(result.username)
+          setUserID(result.userID)
+        }
       } catch (error) {
         setServerError(error);
         setTimeout(() => {
@@ -90,14 +82,14 @@ const Login = () => {
   }, [data])
 
   useEffect(() => {
-    console.log('провераем на странице Login, есть ли уже авторизация')
+    console.log('Проверяем на странице Login, есть ли уже авторизация -', isAuthenticated)
     isAuthenticated && navigate('/dashboard')
-  }, [])
+  }, [isAuthenticated])
 
   return (
-    <div className="login-container">
+    <section className="login-container">
       <div className="login-container__form">
-        <form className="login-container__login-form" onSubmit={loginUserRequest}>
+        <form className="login-container__login-form" onSubmit={login}>
           {loading
             ? <Loader />
             : serverError
@@ -121,7 +113,7 @@ const Login = () => {
           }
         </form>
       </div>
-    </div>
+    </section>
   )
 }
 

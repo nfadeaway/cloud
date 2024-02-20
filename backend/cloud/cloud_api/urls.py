@@ -15,7 +15,7 @@ urlpatterns = [
     path('api/users/<int:pk>/', CloudUserAPIRetrieveUpdateDestroy.as_view()),
 
     path('api/files/', FileAPIList.as_view()),
-    path('api/files/add/', FileAPICreate.as_view()),
+    path('api/files/upload/', FileAPICreate.as_view()),
     path('api/files/<int:pk>/', FileAPIRetrieveUpdateDestroy.as_view()),
     path('api/files/<int:pk>/download/', FileAPIDownload.as_view()),
     path('api/files/<int:pk>/generatelink/', FileAPICreateExternalLink.as_view()),

@@ -46,11 +46,12 @@ class UserLoginAPIView(APIView):
             return Response({'detail': 'Неверные данные.'}, status=status.HTTP_400_BAD_REQUEST)
         else:
             login(request, user)
-            return Response({'detail': 'Успешный вход в систему.'}, status=status.HTTP_200_OK)
+            return Response({'detail': 'Успешный вход в систему.', 'userID': user.id, 'username': user.username}, status=status.HTTP_200_OK)
 
 
 class UserLogoutAPIView(APIView):
-    def post(self, request, format=None):
+    @staticmethod
+    def get(request, format=None):
         if not request.user.is_authenticated:
             return Response({'detail': 'Пользователь не аутентифицирован'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -64,7 +65,7 @@ class SessionView(APIView):
 
     @staticmethod
     def get(request, format=None):
-        return Response({'detail': 'Пользователь успешно аутентифицирован.'}, status=status.HTTP_200_OK)
+        return Response({'detail': 'Пользователь успешно аутентифицирован.', 'userID': request.user.id, 'username': request.user.username}, status=status.HTTP_200_OK)
 
 
 class CSRFTokenView(APIView):

@@ -6,28 +6,55 @@
   justify-content: space-between;
   align-items: center;
   background-color: variables.$main_color;
-  padding: 0 20px;
+  padding: 0 40px;
   color: variables.$header_text_color;
+  font-weight: 400;
   box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
+
+  .header__logo {
+    font-size: 50px;
+  }
 
   .header__nav {
     display: flex;
+    height: 100%;
 
     .header__nav-items {
-      list-style: none;
       display: flex;
+      list-style: none;
+      margin-block-start: 0;
+      margin-block-end: 0;
       align-items: center;
-      //padding: 0;
-      //margin: 0;
+      font-size: 24px;
+
 
       .header__nav-item {
-        margin-right: 20px;
+        color: variables.$header_text_color;
+        cursor: pointer;
 
-        a {
-          text-decoration: none;
-          font-weight: 700;
+        &:not(:last-child) {
+          margin-right: 30px;
+        }
+      }
+
+      .header__nav-item_username {
+        position: relative;
+
+        &::after {
+          content: '';
+          position: absolute;
+          top: -5px;
+          right: -15px;
+          width: 2px;
+          height: 40px;
+          background-color: variables.$header_text_color;
         }
       }
     }
+  }
+
+  a {
+    color: variables.$header_text_color;
+    text-decoration: none;
   }
 }

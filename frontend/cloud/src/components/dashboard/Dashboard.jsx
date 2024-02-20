@@ -1,9 +1,13 @@
+import Uploader from '../uploader/Uploader.jsx'
+
+import './Dashboard.scss'
 
 const Dashboard = () => {
+
   return (
-    <div>
-      dashboard
-    </div>
+    <section className="dashboard-container">
+      <Uploader />
+    </section>
   )
 }
 

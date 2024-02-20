@@ -24,7 +24,7 @@ const Registration = () => {
 
   const navigate = useNavigate()
 
-  const createUserRequest = async (e) => {
+  const registerUser = async (e) => {
     e.preventDefault()
     setLoading(true)
     try {
@@ -71,43 +71,41 @@ const Registration = () => {
   }, [data])
 
   return (
-    <>
-      <div className="registration-container">
-        <div className="registration-container__form">
-          <form className="registration-container__register-form" onSubmit={createUserRequest}>
-            {loading
-              ? <Loader />
-              : serverError
-                ? <SystemMessage type="error" message="Ошибка связи с сервером" />
-                : data.status && data.status === 201
-                  ? <SystemMessage type="success" message="Успешная регистрация" />
-                  : (
-                    <>
-                      <input ref={usernameInput} className="registration-container__username-input" type="text"
-                             placeholder="Имя пользователя" autoComplete="username" required />
-                      <div ref={usernameInvalidDiv} className="registration-container__username-invalid hidden">
-                        {data.status === 400 && data.result.username && data.result.username[0]}
-                      </div>
-                      <input ref={passwordInput} className="registration-container__password-input" type="password"
-                             placeholder="Пароль" autoComplete="new-password" required />
-                      <div ref={passwordInvalidDiv} className="registration-container__password-invalid hidden">
-                        {data.status === 400 && data.result.password && data.result.password[0]}
-                      </div>
-                      <input ref={emailInput} className="registration-container__email" type="text"
-                             placeholder="E-mail" required />
-                      <div ref={emailInvalidDiv} className="registration-container__email-invalid hidden">
-                        {data.status === 400 && data.result.email && data.result.email[0]}
-                      </div>
-                      <button className="registration-container__button" type="submit">Создать</button>
-                      <p className="registration-container__description">Уже зарегистрированы? <Link
-                        to="/login">Войти</Link></p>
-                    </>
-                  )
-            }
-          </form>
-        </div>
+    <section className="registration-container">
+      <div className="registration-container__form">
+        <form className="registration-container__register-form" onSubmit={registerUser}>
+          {loading
+            ? <Loader />
+            : serverError
+              ? <SystemMessage type="error" message="Ошибка связи с сервером" />
+              : data.status && data.status === 201
+                ? <SystemMessage type="success" message="Успешная регистрация" />
+                :
+                  <>
+                    <input ref={usernameInput} className="registration-container__username-input" type="text"
+                           placeholder="Имя пользователя" autoComplete="username" required />
+                    <div ref={usernameInvalidDiv} className="registration-container__username-invalid hidden">
+                      {data.status === 400 && data.result.username && data.result.username[0]}
+                    </div>
+                    <input ref={passwordInput} className="registration-container__password-input" type="password"
+                           placeholder="Пароль" autoComplete="new-password" required />
+                    <div ref={passwordInvalidDiv} className="registration-container__password-invalid hidden">
+                      {data.status === 400 && data.result.password && data.result.password[0]}
+                    </div>
+                    <input ref={emailInput} className="registration-container__email" type="text"
+                           placeholder="E-mail" required />
+                    <div ref={emailInvalidDiv} className="registration-container__email-invalid hidden">
+                      {data.status === 400 && data.result.email && data.result.email[0]}
+                    </div>
+                    <button className="registration-container__button" type="submit">Создать</button>
+                    <p className="registration-container__description">Уже зарегистрированы? <Link
+                      to="/login">Войти</Link></p>
+                  </>
+          }
+        </form>
       </div>
-    </>
+    </section>
+
   )
 }
 
