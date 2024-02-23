@@ -16,18 +16,19 @@ function App() {
   const [username, setUsername] = useState(null)
   const [userID, setUserID] = useState(null)
   const [serverError, setServerError] = useState(null)
+  const [updateDataFlag, setUpdateDataFlag] = useState(false)
 
   useEffect(() => {
     const getSession = async () => {
       console.log('Проверяем сессию в App')
-      const { statusCode, data, error } = await getData('/api/session/')
-      console.log(statusCode, data, error)
-      if (statusCode === 200) {
-        console.log('Сессия найдена. Устанавливаем данные пользователя в App', statusCode, data, error)
+      const { responseStatusCode, responseData, responseError } = await getData('/api/session/')
+      console.log(responseStatusCode, responseData, responseError)
+      if (responseStatusCode === 200) {
+        console.log('Сессия найдена. Устанавливаем данные пользователя в App', responseStatusCode, responseData, responseError)
         setIsAuthenticated(true)
-        setServerError(error)
-        setUserID(data.userID)
-        setUsername(data.username)
+        setServerError(responseError)
+        setUserID(responseData.userID)
+        setUsername(responseData.username)
       }
     }
     getSession()
@@ -39,7 +40,8 @@ function App() {
       isAuthenticated, setIsAuthenticated,
       serverError, setServerError,
       username, setUsername,
-      userID, setUserID
+      userID, setUserID,
+      updateDataFlag, setUpdateDataFlag
     }}>
       <Header />
       <Routes>

@@ -1,3 +1,4 @@
+@use 'variables';
 @import url(https://fonts.googleapis.com/css?family=Roboto:300);
 @import url(https://fonts.googleapis.com/css?family=Roboto:400);
 @import url(https://fonts.googleapis.com/css?family=Roboto:700);
@@ -10,4 +11,48 @@ body {
 
 .hidden {
   display: none;
+}
+
+.button {
+  text-transform: uppercase;
+  outline: 0;
+  background: variables.$main_color;
+  width: 100%;
+  border: 0;
+  padding: 15px;
+  color: variables.$button_text_color;
+  font-size: 14px;
+  cursor: pointer;
+
+  &:hover,
+  &:active {
+    background: variables.$main_color_action;
+  }
+}
+
+.button_ok {
+  padding-top: 10px;
+  padding-bottom: 8px;
+}
+
+.button_cancel {
+  padding-top: 10px;
+  padding-bottom: 8px;
+  background-color: variables.$button_cancel_color;
+
+  &:hover,
+  &:active {
+    background: variables.$button_cancel_action;
+  }
+}
+
+.input {
+  outline: 0;
+  background: variables.$input_color_background;
+  width: 100%;
+  border: 0;
+  margin: 0 0 15px;
+  padding: 15px;
+  box-sizing: border-box;
+  font-size: 14px;
 }

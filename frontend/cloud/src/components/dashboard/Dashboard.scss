@@ -5,3 +5,14 @@
   padding: 8% 5% 0;
   margin: auto;
 }
+
+.dashboard-container__files {
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
+  min-height: 100px;
+  padding: 30px 40px;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
+}

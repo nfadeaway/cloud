@@ -12,12 +12,12 @@ const Login = () => {
 
   const {isAuthenticated, setIsAuthenticated, serverError, setServerError, setUsername, setUserID} = useContext(CloudContext)
 
-  const usernameInput = useRef(null)
-  const passwordInput = useRef(null)
-  const loginInvalidDiv = useRef(null)
-
+  const [loginUsername, setLoginUsername] = useState('')
+  const [loginPassword, setLoginPassword] = useState('')
   const [data, setData] = useState({})
   const [loading, setLoading] = useState(false)
+
+  const loginInvalidDiv = useRef(null)
 
   const navigate = useNavigate()
 
@@ -27,11 +27,19 @@ const Login = () => {
 
   const login = async (e) => {
     e.preventDefault()
+    setLoading(true)
+    const { responseStatusCode, responseData, responseError } = await getCSRF()
+    console.log('Получаем при логине CSRF токен -', responseStatusCode, responseData, responseError)
 
-    const { statusCode, data, error } = await getCSRF()
-    console.log('Получаем при логине CSRF токен -', statusCode, data, error)
-    if (statusCode === 200) {
-      setLoading(true)
+    if (responseError) {
+      setLoading(false)
+      setServerError(responseError)
+      setTimeout(() => {
+        setServerError(null)
+      }, 2000)
+    }
+
+    if (responseStatusCode === 200) {
       try {
         const response = await fetch(
           import.meta.env.VITE_APP_SERVER_URL + '/api/login/',
@@ -40,12 +48,12 @@ const Login = () => {
             credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              'X-CSRFToken': data.csrf,
+              'X-CSRFToken': responseData.csrf,
             },
             body: JSON.stringify(
               {
-                username: usernameInput.current.value,
-                password: passwordInput.current.value,
+                username: loginUsername,
+                password: loginPassword,
               }
             )
           }
@@ -60,6 +68,7 @@ const Login = () => {
           setUserID(result.userID)
         }
       } catch (error) {
+        console.log('ошибка', error)
         setServerError(error);
         setTimeout(() => {
           setServerError(null)
@@ -98,14 +107,14 @@ const Login = () => {
                 ? <SystemMessage type="success" message='Успешный вход в систему' />
                 : (
                   <>
-                    <input ref={usernameInput} className="login-container__username-input" type="text"
+                    <input onChange={(e) => setLoginUsername(e.target.value)} value={loginUsername} className="login-container__username-input input" type="text"
                            placeholder="Имя пользователя" autoComplete="username" required/>
-                    <input ref={passwordInput} className="login-container__password-input" type="password" placeholder="Пароль"
+                    <input onChange={(e) => setLoginPassword(e.target.value)} value={loginPassword} className="login-container__password-input input" type="password" placeholder="Пароль"
                            autoComplete="current-password" required/>
                     <div ref={loginInvalidDiv} className="login-container__login-invalid hidden">
                       {data.status === 400 && data.result.detail}
                     </div>
-                    <button className="login-container__button" type="submit">Войти</button>
+                    <button className="login-container__button button" type="submit">Войти</button>
                     <p className="login-container__description">Не зарегистрированы? <Link
                       to="/registration">Зарегистрироваться</Link></p>
                   </>

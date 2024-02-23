@@ -16,7 +16,7 @@ const getData = async (urlPostfix) => {
     error = err
   }
 
-  return {statusCode: statusCode, data: data, error: error}
+  return {responseStatusCode: statusCode, responseData: data, responseError: error}
 }
 
 export default getData

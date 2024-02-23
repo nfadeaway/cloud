@@ -1,5 +1,5 @@
 $main_color: #4caf50;
-$main_color_action: #43a047;
+$main_color_action: darken($main_color, 3%);
 
 $main_bg_color: #ffffff;
 
@@ -8,6 +8,8 @@ $description_color: #b3b3b3;
 $input_color_background: #f2f2f2;
 
 $button_text_color: #ffffff;
+$button_cancel_color: #1e90ff;
+$button_cancel_action: darken($button_cancel_color, 3%);
 $header_text_color: #ffffff;
 
 $success_text_color: #4caf50;

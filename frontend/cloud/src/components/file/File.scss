@@ -1,0 +1,107 @@
+@use '../../variables';
+
+.file-container__file {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border: 1px solid variables.$main_color;
+  padding: 10px 10px;
+  margin-bottom: 20px;
+
+  .file-container__top-area {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    font-size: 12px;
+
+    .file-container__file-name-area {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    .file-container__filename-edit-button {
+      width: 30%;
+      border: 1px solid variables.$main_color;
+    }
+
+    .filename-input-wrapper {
+      width: 70%;
+
+      &::before {
+        content: 'Имя файла';
+      }
+    }
+
+    .file-container__file-size {
+
+      &::before {
+        content: 'Размер файла';
+      }
+    }
+
+    .file-container__file-comment {
+
+      &::before {
+        content: 'Комментарий';
+      }
+    }
+
+    .file-container__file-upload-date-name {
+
+      &::before {
+        content: 'Дата загрузки';
+      }
+    }
+
+    .file-container__file-download-date {
+
+      &::before {
+        content: 'Дата скачивания';
+      }
+    }
+
+    .file-container__file-external-link {
+
+      &::before {
+        content: 'Внешняя ссылка';
+      }
+    }
+
+    .input {
+      background-color: variables.$main_bg_color;
+    }
+  }
+
+  .file-info {
+    position: relative;
+    padding: 15px 15px;
+    border: 1px solid variables.$main_color;
+    margin-bottom: 10px;
+    font-size: 14px;
+
+    &::before {
+      position: absolute;
+      top: -6px;
+      left: 12px;
+      background-color: variables.$main_bg_color;
+      font-size: 11px;
+      padding: 0 3px;
+    }
+  }
+
+  .filename-input-wrapper {
+    position: relative;
+    width: 100%;
+
+    &::before {
+      position: absolute;
+      top: -5px;
+      left: 13px;
+      background-color: variables.$main_bg_color;
+      font-size: 11px;
+      padding: 0 3px;
+      z-index: 1;
+    }
+  }
+}

@@ -11,16 +11,15 @@ const Registration = () => {
 
   const {serverError, setServerError} = useContext(CloudContext)
 
-  const usernameInput = useRef(null)
-  const passwordInput = useRef(null)
-  const emailInput = useRef(null)
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState('')
+  const [data, setData] = useState({})
+  const [loading, setLoading] = useState(false)
 
   const usernameInvalidDiv = useRef(null)
   const passwordInvalidDiv = useRef(null)
   const emailInvalidDiv = useRef(null)
-
-  const [data, setData] = useState({})
-  const [loading, setLoading] = useState(false)
 
   const navigate = useNavigate()
 
@@ -37,9 +36,9 @@ const Registration = () => {
           },
           body: JSON.stringify(
             {
-              username: usernameInput.current.value,
-              password: passwordInput.current.value,
-              email: emailInput.current.value
+              username: username,
+              password: password,
+              email: email
             }
           )
         }
@@ -82,22 +81,22 @@ const Registration = () => {
                 ? <SystemMessage type="success" message="Успешная регистрация" />
                 :
                   <>
-                    <input ref={usernameInput} className="registration-container__username-input" type="text"
+                    <input onChange={(e) => setUsername(e.target.value)} value={username} className="registration-container__username-input input" type="text"
                            placeholder="Имя пользователя" autoComplete="username" required />
                     <div ref={usernameInvalidDiv} className="registration-container__username-invalid hidden">
                       {data.status === 400 && data.result.username && data.result.username[0]}
                     </div>
-                    <input ref={passwordInput} className="registration-container__password-input" type="password"
+                    <input onChange={(e) => setPassword(e.target.value)} value={password} className="registration-container__password-input input" type="password"
                            placeholder="Пароль" autoComplete="new-password" required />
                     <div ref={passwordInvalidDiv} className="registration-container__password-invalid hidden">
                       {data.status === 400 && data.result.password && data.result.password[0]}
                     </div>
-                    <input ref={emailInput} className="registration-container__email" type="text"
+                    <input onChange={(e) => setEmail(e.target.value)} value={email} className="registration-container__email input" type="text"
                            placeholder="E-mail" required />
                     <div ref={emailInvalidDiv} className="registration-container__email-invalid hidden">
                       {data.status === 400 && data.result.email && data.result.email[0]}
                     </div>
-                    <button className="registration-container__button" type="submit">Создать</button>
+                    <button className="registration-container__button button" type="submit">Создать</button>
                     <p className="registration-container__description">Уже зарегистрированы? <Link
                       to="/login">Войти</Link></p>
                   </>
