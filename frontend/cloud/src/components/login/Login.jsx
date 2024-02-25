@@ -1,97 +1,66 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useContext, useEffect, useRef, useState } from 'react'
 import { CloudContext } from '../../contexts/CloudContext'
-
 import './Login.scss'
 import Loader from '../common/Loader/Loader.jsx'
 import SystemMessage from '../common/SystemMessage/SystemMessage.jsx'
-import getData from '../../utils/getData.js'
+import useRequest from '../../hooks/useRequest.jsx'
 
 
 const Login = () => {
 
-  const {isAuthenticated, setIsAuthenticated, serverError, setServerError, setUsername, setUserID} = useContext(CloudContext)
+  const {isAuthenticated, setIsAuthenticated, setUsername, setUserID} = useContext(CloudContext)
 
   const [loginUsername, setLoginUsername] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
-  const [data, setData] = useState({})
-  const [loading, setLoading] = useState(false)
+
+  const [dataCSRF, loadingCSRF, errorCSRF, requestCSRF] = useRequest()
+  const [dataLogin, loadingLogin, errorLogin, requestLogin] = useRequest()
 
   const loginInvalidDiv = useRef(null)
 
   const navigate = useNavigate()
 
-  const getCSRF = async () => {
-    return await getData('/api/csrf/')
-  }
-
   const login = async (e) => {
     e.preventDefault()
-    setLoading(true)
-    const { responseStatusCode, responseData, responseError } = await getCSRF()
-    console.log('Получаем при логине CSRF токен -', responseStatusCode, responseData, responseError)
-
-    if (responseError) {
-      setLoading(false)
-      setServerError(responseError)
-      setTimeout(() => {
-        setServerError(null)
-      }, 2000)
-    }
-
-    if (responseStatusCode === 200) {
-      try {
-        const response = await fetch(
-          import.meta.env.VITE_APP_SERVER_URL + '/api/login/',
-          {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': responseData.csrf,
-            },
-            body: JSON.stringify(
-              {
-                username: loginUsername,
-                password: loginPassword,
-              }
-            )
-          }
-        )
-        const statusCode = response.status
-        const result = await response.json()
-        setData({status: statusCode, result})
-        console.log(result)
-        if (statusCode === 200) {
-          console.log('Устанавливаем данные пользователя в Login', result.username, result.userID)
-          setUsername(result.username)
-          setUserID(result.userID)
+    const init = {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': dataCSRF.result.csrf,
+      },
+      body: JSON.stringify(
+        {
+          username: loginUsername,
+          password: loginPassword,
         }
-      } catch (error) {
-        console.log('ошибка', error)
-        setServerError(error);
-        setTimeout(() => {
-          setServerError(null)
-        }, 2000)
-      } finally {
-        setLoading(false)
-      }
+      )
     }
+    await requestLogin('/api/login/', init)
   }
 
   useEffect(() => {
-    if (data.status === 400) {
-      data.result.detail && loginInvalidDiv.current.classList.remove('hidden')
-    } else if (data.status === 200) {
+    if (dataLogin.status === 400) {
+      dataLogin.result.detail && loginInvalidDiv.current.classList.remove('hidden')
+    } else if (dataLogin.status === 200) {
       setTimeout(() => {
         setIsAuthenticated(true)
+        setUsername(dataLogin.result.username)
+        setUserID(dataLogin.result.userID)
         navigate('/dashboard')
       }, 2000)
     }
-  }, [data])
+  }, [dataLogin])
 
   useEffect(() => {
-    console.log('Проверяем на странице Login, есть ли уже авторизация -', isAuthenticated)
+    if (!dataCSRF.result) {
+      console.log('запрос CSRF из Логина')
+      requestCSRF('/api/csrf/', {credentials: 'include'})
+    }
+  }, [])
+
+  useEffect(() => {
     isAuthenticated && navigate('/dashboard')
   }, [isAuthenticated])
 
@@ -99,11 +68,11 @@ const Login = () => {
     <section className="login-container">
       <div className="login-container__form">
         <form className="login-container__login-form" onSubmit={login}>
-          {loading
+          {loadingLogin
             ? <Loader />
-            : serverError
+            : errorLogin
               ? <SystemMessage type="error" message="Ошибка связи с сервером" />
-              : data.status && data.status === 200
+              : dataLogin.status && dataLogin.status === 200
                 ? <SystemMessage type="success" message='Успешный вход в систему' />
                 : (
                   <>
@@ -112,7 +81,7 @@ const Login = () => {
                     <input onChange={(e) => setLoginPassword(e.target.value)} value={loginPassword} className="login-container__password-input input" type="password" placeholder="Пароль"
                            autoComplete="current-password" required/>
                     <div ref={loginInvalidDiv} className="login-container__login-invalid hidden">
-                      {data.status === 400 && data.result.detail}
+                      {dataLogin.status === 400 && dataLogin.result.detail}
                     </div>
                     <button className="login-container__button button" type="submit">Войти</button>
                     <p className="login-container__description">Не зарегистрированы? <Link

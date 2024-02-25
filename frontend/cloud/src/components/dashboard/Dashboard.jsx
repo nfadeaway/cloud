@@ -2,60 +2,46 @@ import Uploader from '../uploader/Uploader.jsx'
 
 import './Dashboard.scss'
 import File from '../file/File.jsx'
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useEffect } from 'react'
 import { CloudContext } from '../../contexts/CloudContext.js'
-import getData from '../../utils/getData.js'
+import useRequest from '../../hooks/useRequest.jsx'
+import Loader from '../common/Loader/Loader.jsx'
+import SystemMessage from '../common/SystemMessage/SystemMessage.jsx'
 
 const Dashboard = () => {
 
-  const {serverError, setServerError, userID, updateDataFlag, setUpdateDataFlag, isAuthenticated} = useContext(CloudContext)
-
-  const [data, setData] = useState({})
-  const [loading, setLoading] = useState(false)
+  const {userID, updateDataFlag, setUpdateDataFlag, isAuthenticated} = useContext(CloudContext)
+  const [dataFiles, loadingFiles, errorFiles, requestFiles] = useRequest()
 
   useEffect(() => {
-
-    const getFiles = async () => {
-      if (isAuthenticated && userID) {
-        setLoading(true)
-        console.log('Пользователь:', userID, isAuthenticated)
-        console.log('Качаем данные о файлах пользователя')
-        const { responseStatusCode, responseData, responseError } = await getData(`/api/files/`)
-        console.log(responseStatusCode, responseData, responseError)
-
-        if (responseError) {
-          setLoading(false)
-          setServerError(responseError)
-          setTimeout(() => {
-            setServerError(null)
-          }, 2000)
-        }
-
-        if (responseStatusCode === 200) {
-          console.log('Данные получены')
-          console.log(responseStatusCode, responseData, responseError)
-          setServerError(responseError)
-          setData({status: responseStatusCode, files: responseData})
-          console.log('data', data)
-        }
-      }
+    if (isAuthenticated && userID) {
+      requestFiles(`/api/files/`, {credentials: 'include'})
     }
-
-    getFiles()
   }, [])
+
+  useEffect(() => {
+    if (updateDataFlag) {
+      requestFiles(`/api/files/`, {credentials: 'include'})
+      setUpdateDataFlag(false)
+    }
+  }, [updateDataFlag])
 
   return (
     <section className="dashboard-container">
       <Uploader />
-      {data.status && data.status === 200 &&
-        <>
-          <div className="dashboard-container__files">
-          {data.files.map((file) => (
-            <File key={file.id} file={file} />
-          ))}
-          </div>
-        </>
-      }
+      <div className="dashboard-container__files">
+        {loadingFiles
+          ? <Loader />
+          : errorFiles
+            ? <SystemMessage type="error" message="Ошибка связи с сервером" />
+            : dataFiles.status && dataFiles.status === 200
+              ?
+                dataFiles.result.length > 0
+                  ? dataFiles.result.map((file) => (<File key={file.id} file={file} />))
+                  : <div className="text">У вас еще нет файлов</div>
+              : null
+        }
+      </div>
     </section>
   )
 }

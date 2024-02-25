@@ -3,31 +3,27 @@ import { Link, useNavigate } from 'react-router-dom'
 import { CloudContext } from '../../contexts/CloudContext.js'
 
 import './Header.scss'
+import useRequest from '../../hooks/useRequest.jsx'
 
 const Header = () => {
 
-  const {isAuthenticated, setIsAuthenticated, serverError, setServerError, username, setUsername, userID, setUserID} = useContext(CloudContext)
+  const {isAuthenticated, setIsAuthenticated, username, setUsername, setUserID} = useContext(CloudContext)
+  const [dataLogout, loadingLogout, errorLogout, requestLogout] = useRequest()
 
   const logout = async () => {
-    try {
-      const response = await fetch(
-        import.meta.env.VITE_APP_SERVER_URL + '/api/logout/',
-        {
-          credentials: 'include'
-        }
-      )
-      const statusCode = response.status
-      const result = await response.json()
-      console.log(result)
-      if (statusCode === 200) {
-        setIsAuthenticated(false)
-        setUsername(false)
-        setUserID(false)
-      }
-    } catch (error) {
-      setServerError(error)
+    const init = {
+      credentials: 'include'
     }
+    await requestLogout('/api/logout/', init)
   }
+
+  useEffect(() => {
+    if (dataLogout.status === 200) {
+      setIsAuthenticated(false)
+      setUsername(false)
+      setUserID(false)
+    }
+  }, [dataLogout])
 
   return (
     <header className="header">

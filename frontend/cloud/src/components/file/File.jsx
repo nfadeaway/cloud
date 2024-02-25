@@ -3,121 +3,237 @@ import getFileSize from '../../utils/getFileSize.js'
 import getTime from '../../utils/getTime.js'
 import { useContext, useEffect, useRef, useState } from 'react'
 
+import editIcon from '../../images/icons/edit_icon.svg'
 import okIcon from '../../images/icons/ok_icon.svg'
 import cancelIcon from '../../images/icons/cancel_icon.svg'
-import successIcon from '../../images/icons/success_icon.svg'
-import getData from '../../utils/getData.js'
+import generateLinkIcon from '../../images/icons/generate_link_icon.svg'
+import shareIcon from '../../images/icons/share_icon.svg'
+import copyIcon from '../../images/icons/copy_icon.svg'
+import downloadIcon from '../../images/icons/download_icon.svg'
+import deleteIcon from '../../images/icons/delete_icon.svg'
 import { CloudContext } from '../../contexts/CloudContext.js'
+import useRequest from '../../hooks/useRequest.jsx'
+import useDownloadFile from '../../hooks/useDownloadFile.jsx'
+import Loader from '../common/Loader/Loader.jsx'
+import SystemMessage from '../common/SystemMessage/SystemMessage.jsx'
 
 const File = (props) => {
   console.log(props)
 
-  const {serverError, setServerError} = useContext(CloudContext)
+  const {username, setUpdateDataFlag} = useContext(CloudContext)
 
   const [editFilenameFlag, setEditFilenameFlag] = useState(false)
+  const [editCommentFlag, setEditCommentFlag] = useState(false)
+  // const [externalLinkFlag, setExternalLinkFlag] = useState(false)
   const [filename, setFilename] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [comment, setComment] = useState('')
+
+  const [dataCSRF, loadingCSRF, errorCSRF, requestCSRF] = useRequest()
+  const [dataUpdate, loadingUpdate, errorUpdate, requestUpdate] = useRequest()
+  const [dataDelete, loadingDelete, errorDelete, requestDelete] = useRequest('delete')
+  const [dataDownloadFile, loadingDownloadFile, errorDownloadFile, requestDownloadFile] = useDownloadFile()
 
   const filenameInput = useRef(null)
+  const commentInput = useRef(null)
+  const externalLinkDiv = useRef(null)
+  const copyImg = useRef(null)
+  const shareImg = useRef(null)
 
   const editFilenameToggle = () => {
     setEditFilenameFlag(!editFilenameFlag)
   }
 
-  const getCSRF = async () => {
-    return await getData('/api/csrf/')
+  const editCommentToggle = () => {
+    setEditCommentFlag(!editCommentFlag)
   }
 
-  const updateFileInfo = async () => {
-    setLoading(true)
-    const { responseStatusCode, responseData, responseError } = await getCSRF()
-    console.log('Получаем при апдейте файла CSRF токен -', responseStatusCode, responseData, responseError)
+  const copyLink = () => {
+    navigator.clipboard.writeText(externalLinkDiv.current.innerText)
+    shareImg.current.classList.toggle('hidden')
+    copyImg.current.classList.toggle('hidden')
+    setTimeout(() => {
+      copyImg.current.classList.toggle('hidden')
+      shareImg.current.classList.toggle('hidden')
+    },1000)
+  }
 
-    if (responseError) {
-      console.log('ошибка CSRF', responseError)
-      setLoading(false)
-      setServerError(responseError)
-      setTimeout(() => {
-        setServerError(null)
-      }, 2000)
-    }
+  const generateExternalLink = async (e) => {
+    const fileId = e.currentTarget.dataset.id
+    await requestUpdate(`/api/files/${fileId}/generatelink/`, {credentials: 'include'})
+  }
 
-    if (responseStatusCode === 200) {
-      try {
-        let formData = new FormData()
-        formData.append('content', fileData)
-        formData.append('cloud_user', userID)
-        formData.append('comment', comment)
-        const response = await fetch(
-          import.meta.env.VITE_APP_SERVER_URL + '/api/files/upload/',
-          {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-              'X-CSRFToken': responseData.csrf,
-            },
-            body: formData
-          }
-        )
-        const statusCode = response.status
-        const result = await response.json()
-        setData({status: statusCode, result})
-        console.log(result)
-        if (statusCode === 201) {
-          console.log('Устанавливаем данные флага обновления данных в true')
-          setUpdateDataFlag(true)
-        }
-      } catch (error) {
-        setServerError(error);
-      } finally {
-        setLoading(false)
-        setTimeout(() => {
-          setData({})
-          setFileData(null)
-          setServerError(null)
-          setComment('')
-        }, 2000)
-      }
+  const updateFileInfo = async (e) => {
+    const fileId = e.currentTarget.dataset.id
+    let body = {}
+    if (editFilenameFlag) {
+      body.filename = filename
+    } else if (editCommentFlag) {
+      body.comment = comment
+    } else {
+      body.external_link_key = ''
     }
+    const init = {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': dataCSRF.result.csrf
+      },
+      body: JSON.stringify(body)
+    }
+    await requestUpdate(`/api/files/${fileId}/`, init)
+  }
+
+  const downloadFile = async (e) => {
+    const fileId = e.currentTarget.dataset.id
+    await requestDownloadFile(`/api/files/${fileId}/download/`, {credentials: 'include'}, props.file.filename)
+  }
+
+  const deleteFile = async (e) => {
+    const fileId = e.currentTarget.dataset.id
+    const init = {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': dataCSRF.result.csrf
+      },
+    }
+    await requestDelete(`/api/files/${fileId}/`, init)
   }
 
   useEffect(() => {
-    editFilenameFlag && filenameInput.current.focus()
-  }, [editFilenameFlag])
+    if (!dataCSRF.result) {
+      console.log('запрос CSRF из Файла')
+      requestCSRF('/api/csrf/', {credentials: 'include'})
+    }
+  }, [])
+
+  useEffect(() => {
+    if (editFilenameFlag) {
+      setFilename(props.file.filename)
+      filenameInput.current.focus()
+    }
+    if (editCommentFlag) {
+      setComment(props.file.comment)
+      commentInput.current.focus()
+    }
+  }, [editFilenameFlag, editCommentFlag])
+
+  useEffect(() => {
+    console.log(dataDelete)
+    if (dataUpdate.status === 200 || dataDownloadFile.status === 200 || dataDelete.status === 204) {
+      setUpdateDataFlag(true)
+    }
+  }, [dataUpdate, dataDownloadFile, dataDelete])
 
   return (
     <div className="file-container__file">
-      <div className="file-container__top-area">
-        <div className="file-container__file-name-area">
-          <div className="filename-input-wrapper">
-            {editFilenameFlag
-              ? <input ref={filenameInput} data-id={props.file.id} type="text" value={filename} onChange={(e) => setFilename(e.target.value)}
-                       className="file-container__file-name file-info input"/>
-              : <div className="file-container__file-name file-info">{props.file.filename}</div>
-            }
-          </div>
-          {!editFilenameFlag
-            ? <button className="file-container__filename-edit-button button" onClick={editFilenameToggle}>Изменить</button>
-            :
-              <>
-                <button className="file-container__filename-edit-button button button_ok" onClick={updateFileInfo}>
-                  <img src={okIcon} alt="Иконка подтверждения" className="file-container__icon"/>
-                </button>
-                <button className="file-container__filename-edit-button button button_cancel" onClick={editFilenameToggle}>
-                  <img src={cancelIcon} alt="Иконка отмены" className="file-container__icon"/>
-                </button>
-              </>
-          }
-        </div>
-        <div className="file-container__file-comment file-info">{props.file.comment}</div>
-        <div className="file-container__file-size file-info">{getFileSize(props.file.size)}</div>
-        <div className="file-container__file-upload-date file-info">{getTime(props.file.date_uploaded)}</div>
-        <div className="file-container__file-download-date file-info">{getTime(props.file.last_download)}</div>
-        <div className="file-container__file-external-link file-info">{props.file.external_link_key}</div>
-      </div>
-      <div className="file-container__bottom-area">
+      {loadingUpdate || loadingDelete || loadingDownloadFile
+        ? <Loader />
+        : errorUpdate || errorDelete || errorDownloadFile
+          ? <SystemMessage type="error" message="Ошибка связи с сервером" />
+          : dataUpdate.status && dataUpdate.status !== 200
+            ? <SystemMessage type="error" message={dataUpdate.result.content[0]} />
+            : dataDownloadFile.status && dataDownloadFile.status !== 200
+              ? <SystemMessage type="error" message={dataDownloadFile.result.detail} />
+              : dataDelete.status && dataDelete.status !== 204
+                ? <SystemMessage type="error" message={dataDelete.result.detail} />
+                : (
+                  <>
+                    <div className="file-container__top-area">
+                      <div className="file-container__file-name-area">
+                        <div className="filename-input-wrapper">
+                          {editFilenameFlag
+                            ? <input ref={filenameInput} type="text" value={filename} onChange={(e) => setFilename(e.target.value)}
+                                     className="file-container__file-name input"/>
+                            : <div className="file-container__file-name file-info">{props.file.filename}</div>
+                          }
+                        </div>
+                        {!editFilenameFlag
+                          ? <div className="file-container__filename-edit-button button" onClick={editFilenameToggle}>
+                              <img src={editIcon} alt="Иконка редактирования" className="file-container__icon"/>
+                            </div>
+                          :
+                          <>
+                            <div data-id={props.file.id} className="file-container__filename-edit-button button button_ok"
+                                    onClick={updateFileInfo}>
+                              <img src={okIcon} alt="Иконка подтверждения" className="file-container__icon"/>
+                            </div>
+                            <div className="file-container__filename-edit-button button button_cancel"
+                                    onClick={editFilenameToggle}>
+                              <img src={cancelIcon} alt="Иконка отмены" className="file-container__icon"/>
+                            </div>
+                          </>
+                        }
+                      </div>
+                      <div className="file-container__file-comment-area">
+                        <div className="comment-input-wrapper">
+                          {editCommentFlag
+                            ? <input ref={commentInput} type="text" value={comment} onChange={(e) => setComment(e.target.value)}
+                                     className="file-container__file-comment input"/>
+                            : <div className="file-container__file-comment file-info">{props.file.comment}</div>
+                          }
+                        </div>
+                        {!editCommentFlag
+                          ? <div className="file-container__comment-edit-button button" onClick={editCommentToggle}>
+                              <img src={editIcon} alt="Иконка редактирования" className="file-container__icon"/>
+                            </div>
+                          :
+                          <>
+                            <div data-id={props.file.id} className="file-container__comment-edit-button button button_ok"
+                                    onClick={updateFileInfo}>
+                              <img src={okIcon} alt="Иконка подтверждения" className="file-container__icon"/>
+                            </div>
+                            <div className="file-container__comment-edit-button button button_cancel"
+                                    onClick={editCommentToggle}>
+                              <img src={cancelIcon} alt="Иконка отмены" className="file-container__icon"/>
+                            </div>
+                          </>
+                        }
+                      </div>
+                      <div className="file-container__file-external-link-area">
+                        <div ref={externalLinkDiv} className="file-container__file-external-link file-info">{props.file.external_link_key && window.location.origin + '/f/' + props.file.external_link_key}</div>
+                        {props.file.external_link_key
+                          ?
+                          <>
+                            <div data-id={props.file.id} className="file-container__file-external-link-button button button_ok"
+                                 onClick={copyLink}>
+                              <img ref={shareImg} src={shareIcon} alt="Иконка генерации" className="file-container__icon"/>
+                              <img ref={copyImg} src={copyIcon} alt="Иконка генерации" className="file-container__icon hidden"/>
 
-      </div>
+                            </div>
+                            <div data-id={props.file.id} className="file-container__file-external-link-button button button_cancel"
+                                    onClick={updateFileInfo}>
+                              <img src={cancelIcon} alt="Иконка отмены" className="file-container__icon"/>
+                            </div>
+                          </>
+                          :
+                          <>
+                            <div data-id={props.file.id} className="file-container__file-external-link-button button button_generate"
+                                    onClick={generateExternalLink}>
+                              <img src={generateLinkIcon} alt="Иконка ссылки" className="file-container__icon"/>
+                            </div>
+                          </>
+                        }
+                      </div>
+                    </div>
+                    <div className="file-container__bottom-area">
+                      <div className="file-container__file-size file-info">{getFileSize(props.file.size)}</div>
+                      <div className="file-container__file-upload-date file-info">{getTime(props.file.date_uploaded)}</div>
+                      <div className="file-container__file-download-date file-info">{getTime(props.file.last_download)}</div>
+                      <div data-id={props.file.id} className="file-container__file-download-button button button_download"
+                           onClick={downloadFile}>
+                        <img src={downloadIcon} alt="Иконка скачивания" className="file-container__icon"/>
+                      </div>
+                      <div data-id={props.file.id} className="file-container__file-delete-button button button_delete"
+                           onClick={deleteFile}>
+                        <img src={deleteIcon} alt="Иконка удаления" className="file-container__icon"/>
+                      </div>
+                    </div>
+                  </>
+                )
+      }
     </div>
   )
 }

@@ -1,88 +1,64 @@
-import { useContext, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import addIcon from '../../images/icons/add_icon.svg'
 import getFileSize from '../../utils/getFileSize.js'
-
 import './Uploader.scss'
 import { CloudContext } from '../../contexts/CloudContext.js'
-import getData from '../../utils/getData.js'
 import Loader from '../common/Loader/Loader.jsx'
 import SystemMessage from '../common/SystemMessage/SystemMessage.jsx'
 import getShortFilename from '../../utils/getFilename.js'
+import useRequest from '../../hooks/useRequest.jsx'
 
 const Uploader = () => {
 
-  const {serverError, setServerError, userID, setUpdateDataFlag} = useContext(CloudContext)
+  const {userID, setUpdateDataFlag} = useContext(CloudContext)
 
-  const [fileData, setFileData] = useState(null)
+  const [file, setFile] = useState(null)
   const [comment, setComment] = useState('')
-  const [data, setData] = useState({})
-  const [loading, setLoading] = useState(false)
+  const [dataCSRF, loadingCSRF, errorCSRF, requestCSRF] = useRequest()
+  const [dataUpload, loadingUpload, errorUpload, requestUpload] = useRequest('uploader')
 
   const fileHandler = (e) => {
-    console.log(e.target.files[0])
-    setFileData(e.target.files[0])
-  }
-
-  const getCSRF = async () => {
-    return await getData('/api/csrf/')
+    setFile(e.target.files[0])
   }
 
   const uploadFile = async () => {
-    setLoading(true)
-    const { responseStatusCode, responseData, responseError } = await getCSRF()
-    console.log('Получаем при аплоаде CSRF токен -', responseStatusCode, responseData, responseError)
 
-    if (responseError) {
-      console.log('ошибка CSRF', responseError)
-      setLoading(false)
-      setServerError(responseError)
+    let formData = new FormData()
+    formData.append('content', file)
+    formData.append('cloud_user', userID)
+    formData.append('comment', comment)
+
+    const init = {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'X-CSRFToken': dataCSRF.result.csrf
+      },
+      body: formData
+    }
+    await requestUpload('/api/files/upload/', init)
+  }
+
+  useEffect(() => {
+    if (!dataCSRF.result) {
+      console.log('запрос CSRF из Аплоадера')
+      requestCSRF('/api/csrf/', {credentials: 'include'})
+    }
+  }, [])
+
+  useEffect(() => {
+    if (dataUpload.status === 201) {
       setTimeout(() => {
-        setServerError(null)
+        setUpdateDataFlag(true)
+        setFile(null)
+        setComment('')
       }, 2000)
     }
-
-    if (responseStatusCode === 200) {
-      try {
-        let formData = new FormData()
-        formData.append('content', fileData)
-        formData.append('cloud_user', userID)
-        formData.append('comment', comment)
-        const response = await fetch(
-          import.meta.env.VITE_APP_SERVER_URL + '/api/files/upload/',
-          {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-              'X-CSRFToken': responseData.csrf,
-            },
-            body: formData
-          }
-        )
-        const statusCode = response.status
-        const result = await response.json()
-        setData({status: statusCode, result})
-        console.log(result)
-        if (statusCode === 201) {
-          console.log('Устанавливаем данные флага обновления данных в true')
-          setUpdateDataFlag(true)
-        }
-      } catch (error) {
-        setServerError(error);
-      } finally {
-        setLoading(false)
-        setTimeout(() => {
-          setData({})
-          setFileData(null)
-          setServerError(null)
-          setComment('')
-        }, 2000)
-      }
-    }
-  }
+  }, [dataUpload])
 
   return (
     <div className="upload-container">
-      {!fileData
+      {!file
         ?
           <>
             <label htmlFor="upload-container__file-input">
@@ -95,20 +71,20 @@ const Uploader = () => {
         :
           <>
             <div className="upload-container__file-info-area">
-              {loading
+              {loadingUpload
                 ? <Loader />
-                : serverError
+                : errorUpload
                   ? <SystemMessage type="error" message="Ошибка связи с сервером" />
-                  : data.status && data.status === 201
+                  : dataUpload.status && dataUpload.status === 201
                     ? <SystemMessage type="success" message="Файл загружен на сервер" />
-                    : data.status && data.status === 400
-                      ? <SystemMessage type="error" message={data.result.content[0]} />
+                    : dataUpload.status && dataUpload.status === 400
+                      ? <SystemMessage type="error" message={dataUpload.result.content[0]} />
                       :
                         <>
                           <div className="upload-container__file-info-area_top">
                             <div className="upload-container__file-info">
-                              <div className="upload-container__filename">Имя файла: {getShortFilename(fileData.name, 50)}</div>
-                              <div className="upload-container__filesize">Размер файла: {getFileSize(fileData.size)}</div>
+                              <div className="upload-container__filename">Имя файла: {getShortFilename(file.name, 50)}</div>
+                              <div className="upload-container__filesize">Размер файла: {getFileSize(file.size)}</div>
                             </div>
                             <button className="upload-container__button button" onClick={uploadFile}>Отправить</button>
                           </div>
