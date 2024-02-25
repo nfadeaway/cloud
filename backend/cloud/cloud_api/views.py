@@ -9,6 +9,7 @@ from django.utils import timezone
 from rest_framework import viewsets, generics, status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -72,7 +73,7 @@ class CSRFTokenView(APIView):
     @staticmethod
     def get(request, format=None):
         csrf_token = get_token(request)
-        return Response({'csrf': csrf_token})
+        return Response({'csrf': csrf_token}, status=status.HTTP_200_OK)
 
 
 class CloudUserAPIRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
@@ -93,6 +94,9 @@ class FileAPICreate(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
+        file_exist = self.queryset.filter(filename=serializer.validated_data['content'].name)
+        if file_exist:
+            raise ValidationError({'content': ['Файл с таким именем уже существует']})
         uploaded_file_name = serializer.validated_data['content'].name
         uploaded_file_size = serializer.validated_data['content'].size
         serializer.save(filename=uploaded_file_name, size=uploaded_file_size)
@@ -108,6 +112,19 @@ class FileAPIRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         path = instance.content.path
         instance.delete()
         storage.delete(path)
+
+    def perform_update(self, serializer):
+        if 'filename' in serializer.validated_data:
+            file_exist = self.queryset.filter(filename=serializer.validated_data['filename'])
+            if file_exist:
+                raise ValidationError({'content': ['Файл с таким именем уже существует']})
+            old_path = serializer.instance.content.path
+            new_filename = serializer.validated_data['filename']
+            content = serializer.instance.cloud_user.username + '/' + new_filename
+            os.rename(old_path, serializer.instance.content.storage.location + '\\' + serializer.instance.cloud_user.username + '\\' + new_filename)
+            serializer.save(content=content)
+        else:
+            serializer.save()
 
 
 class FileAPIList(generics.ListAPIView):
@@ -133,14 +150,13 @@ class FileAPIDownload(generics.RetrieveAPIView):
         self.check_object_permissions(request, file)
         file_path = f'{MEDIA_ROOT}/{file.content}'
         if os.path.exists(file_path):
-            # file = open(file_path, 'rb')
-            response = FileResponse(open(file_path, 'rb'))
+            response = FileResponse(open(file_path, 'rb'), as_attachment=True)
             response['Content-Disposition'] = f'attachment; filename="{file}"'
             file.last_download = timezone.now()
             file.save()
             return response
         else:
-            return Response({'detail': 'Файл не найден'}, status=404)
+            return Response({'detail': 'Файл не найден'}, status=status.HTTP_404_NOT_FOUND)
 
 
 class FileAPIExternalDownload(generics.RetrieveAPIView):
@@ -152,17 +168,16 @@ class FileAPIExternalDownload(generics.RetrieveAPIView):
         try:
             file = self.queryset.get(external_link_key=link_key)
         except ObjectDoesNotExist:
-            raise NotFound(detail=f'Запись о файле c ключом {link_key} не найдена в базе данных')
+            raise ValidationError(detail=f'Запись о файле c ключом {link_key} не найдена в базе данных')
         file_path = f'{MEDIA_ROOT}/{file.content}'
         if os.path.exists(file_path):
-            # file = open(file_path, 'rb')
             response = FileResponse(open(file_path, 'rb'))
             response['Content-Disposition'] = f'attachment; filename="{file}"'
             file.last_download = timezone.now()
             file.save()
             return response
         else:
-            return Response({'detail': 'Файл не найден'}, status=404)
+            return Response({'detail': 'Файл не найден'}, status=status.HTTP_404_NOT_FOUND)
 
 
 class FileAPICreateExternalLink(generics.RetrieveAPIView):
@@ -187,4 +202,4 @@ class FileAPICreateExternalLink(generics.RetrieveAPIView):
                 return self.retrieve(request, *args, **kwargs)
         else:
             return Response({'detail': 'Не удалось создать ключ внешней ссылки, обратитесь к администратору'},
-                            status=500)
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
