@@ -47,7 +47,15 @@ class UserLoginAPIView(APIView):
             return Response({'detail': 'Неверные данные.'}, status=status.HTTP_400_BAD_REQUEST)
         else:
             login(request, user)
-            return Response({'detail': 'Успешный вход в систему.', 'userID': user.id, 'username': user.username}, status=status.HTTP_200_OK)
+            return Response(
+                {
+                    'detail': 'Успешный вход в систему.',
+                    'userID': user.id,
+                    'username': user.username,
+                    'isAdmin': request.user.is_superuser
+                },
+                status=status.HTTP_200_OK
+            )
 
 
 class UserLogoutAPIView(APIView):
@@ -66,7 +74,15 @@ class SessionView(APIView):
 
     @staticmethod
     def get(request, format=None):
-        return Response({'detail': 'Пользователь успешно аутентифицирован.', 'userID': request.user.id, 'username': request.user.username}, status=status.HTTP_200_OK)
+        return Response(
+            {
+                'detail': 'Пользователь успешно аутентифицирован.',
+                'userID': request.user.id,
+                'username': request.user.username,
+                'isAdmin': request.user.is_superuser
+            },
+            status=status.HTTP_200_OK
+        )
 
 
 class CSRFTokenView(APIView):
@@ -94,7 +110,7 @@ class FileAPICreate(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        file_exist = self.queryset.filter(filename=serializer.validated_data['content'].name)
+        file_exist = self.queryset.filter(filename=serializer.validated_data['content'].name).filter(cloud_user=serializer.validated_data['cloud_user'])
         if file_exist:
             raise ValidationError({'content': ['Файл с таким именем уже существует']})
         uploaded_file_name = serializer.validated_data['content'].name
@@ -115,7 +131,7 @@ class FileAPIRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_update(self, serializer):
         if 'filename' in serializer.validated_data:
-            file_exist = self.queryset.filter(filename=serializer.validated_data['filename'])
+            file_exist = self.queryset.filter(filename=serializer.validated_data['filename']).filter(cloud_user=self.request.user)
             if file_exist:
                 raise ValidationError({'content': ['Файл с таким именем уже существует']})
             old_path = serializer.instance.content.path
@@ -133,7 +149,7 @@ class FileAPIList(generics.ListAPIView):
 
     def get_queryset(self):
         pk = self.kwargs.get('pk')
-        return File.objects.filter(cloud_user=self.request.user)
+        return File.objects.filter(cloud_user=self.request.user).order_by('date_uploaded')
 
 
 class FileAPIDownload(generics.RetrieveAPIView):
@@ -172,7 +188,9 @@ class FileAPIExternalDownload(generics.RetrieveAPIView):
         file_path = f'{MEDIA_ROOT}/{file.content}'
         if os.path.exists(file_path):
             response = FileResponse(open(file_path, 'rb'))
+            response['Access-Control-Expose-Headers'] = 'Filename'
             response['Content-Disposition'] = f'attachment; filename="{file}"'
+            response['Filename'] = file
             file.last_download = timezone.now()
             file.save()
             return response
