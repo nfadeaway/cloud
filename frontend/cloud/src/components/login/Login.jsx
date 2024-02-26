@@ -9,7 +9,7 @@ import useRequest from '../../hooks/useRequest.jsx'
 
 const Login = () => {
 
-  const {isAuthenticated, setIsAuthenticated, setUsername, setUserID} = useContext(CloudContext)
+  const {isAuthenticated, setIsAuthenticated, setUsername, setUserID, setIsAdmin} = useContext(CloudContext)
 
   const [loginUsername, setLoginUsername] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
@@ -48,6 +48,7 @@ const Login = () => {
         setIsAuthenticated(true)
         setUsername(dataLogin.result.username)
         setUserID(dataLogin.result.userID)
+        setIsAdmin(dataLogin.result.isAdmin)
         navigate('/dashboard')
       }, 2000)
     }

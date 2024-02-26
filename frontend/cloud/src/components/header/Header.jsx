@@ -7,7 +7,7 @@ import useRequest from '../../hooks/useRequest.jsx'
 
 const Header = () => {
 
-  const {isAuthenticated, setIsAuthenticated, username, setUsername, setUserID} = useContext(CloudContext)
+  const {isAuthenticated, setIsAuthenticated, username, setUsername, setUserID, isAdmin, setIsAdmin} = useContext(CloudContext)
   const [dataLogout, loadingLogout, errorLogout, requestLogout] = useRequest()
 
   const logout = async () => {
@@ -22,6 +22,7 @@ const Header = () => {
       setIsAuthenticated(false)
       setUsername(false)
       setUserID(false)
+      setIsAdmin(false)
     }
   }, [dataLogout])
 
@@ -30,14 +31,14 @@ const Header = () => {
       <Link to="/"><div className="header__logo">CLOUD</div></Link>
       <nav className="header__nav">
         <ul className="header__nav-items">
-          {!isAuthenticated &&
-            <li className="header__nav-item"><Link to="/login">Войти</Link></li>
-          }
-          {isAuthenticated &&
-            <>
-              <li className="header__nav-item header__nav-item_username"><Link to="/dashboard">{username}</Link></li>
-              <li className="header__nav-item" onClick={logout}>Выйти</li>
-            </>
+          {isAdmin && <li className="header__nav-item"><Link to="/admin-panel">Панель управления</Link></li>}
+          {!isAuthenticated
+            ? <li className="header__nav-item"><Link to="/login">Войти</Link></li>
+            :
+              <>
+                <li className="header__nav-item"><Link to="/dashboard">{username}</Link></li>
+                <li className="header__nav-item" onClick={logout}>Выйти</li>
+              </>
           }
         </ul>
       </nav>

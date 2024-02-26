@@ -86,7 +86,7 @@ const File = (props) => {
 
   const downloadFile = async (e) => {
     const fileId = e.currentTarget.dataset.id
-    await requestDownloadFile(`/api/files/${fileId}/download/`, {credentials: 'include'}, props.file.filename)
+    await requestDownloadFile(`/api/files/${fileId}/download/`, {credentials: 'include'})
   }
 
   const deleteFile = async (e) => {

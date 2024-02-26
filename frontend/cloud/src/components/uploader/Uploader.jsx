@@ -47,13 +47,11 @@ const Uploader = () => {
   }, [])
 
   useEffect(() => {
-    if (dataUpload.status === 201) {
-      setTimeout(() => {
-        setUpdateDataFlag(true)
-        setFile(null)
-        setComment('')
-      }, 2000)
-    }
+    setTimeout(() => {
+      dataUpload.status === 201 && setUpdateDataFlag(true)
+      setFile(null)
+      setComment('')
+    }, 2000)
   }, [dataUpload])
 
   return (

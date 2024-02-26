@@ -10,9 +10,12 @@ import Main from './components/main/Main.jsx'
 import Header from './components/header/Header.jsx'
 import useRequest from './hooks/useRequest.jsx'
 import ExternalFileDownload from './components/externalfiledownload/ExternalFileDownload.jsx'
+import AdminPanel from './components/adminpanel/AdminPanel.jsx'
+import AdminRoutes from './utils/AdminRoutes.jsx'
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [username, setUsername] = useState(null)
   const [userID, setUserID] = useState(null)
   const [updateDataFlag, setUpdateDataFlag] = useState(false)
@@ -29,6 +32,7 @@ function App() {
       setIsAuthenticated(true)
       setUserID(dataSession.result.userID)
       setUsername(dataSession.result.username)
+      setIsAdmin(dataSession.result.isAdmin)
     }
   }, [dataSession])
 
@@ -38,16 +42,19 @@ function App() {
       username, setUsername,
       userID, setUserID,
       updateDataFlag, setUpdateDataFlag,
+      isAdmin, setIsAdmin
     }}>
       <Header />
       <Routes>
         <Route path="/" element={<Main/>} />
         <Route path="/login" element={<Login />} />
         <Route path="/registration" element={<Registration />} />
+        <Route element={<AdminRoutes />}>
+          <Route path="/admin-panel" element={<AdminPanel />} exact />
+        </Route>
         <Route element={<PrivateRoutes />}>
           <Route path="/dashboard" element={<Dashboard />} exact />
         </Route>
-
         <Route path="/f/*" element={<ExternalFileDownload />} />
       </Routes>
     </CloudContext.Provider>

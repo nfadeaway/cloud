@@ -36,14 +36,14 @@
         }
       }
 
-      .header__nav-item_username {
+      .header__nav-item:not(:last-child) {
         position: relative;
 
         &::after {
           content: '';
           position: absolute;
           top: -5px;
-          right: -15px;
+          right: -18px;
           width: 2px;
           height: 40px;
           background-color: variables.$header_text_color;
