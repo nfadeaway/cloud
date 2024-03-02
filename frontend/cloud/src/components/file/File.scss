@@ -8,7 +8,7 @@
   padding: 10px 10px;
   justify-content: center;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
   border: 1px solid variables.$main_color;
 
   .file-container__top-area {
@@ -22,26 +22,25 @@
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
-      column-gap: 5px;
+      column-gap: 10px;
     }
 
     .file-container__filename-edit-button,
     .file-container__comment-edit-button,
     .file-container__file-external-link-button {
-      width: 173px;
+      width: 169px;
       height: 16px;
       border: 1px solid variables.$main_color;
     }
 
-    .button_ok {
-      width: 68px;
+    .button_ok,
+    .button_cancel {
+      width: 63px;
       height: 16px;
       border: 1px solid variables.$main_color;
     }
 
     .button_cancel {
-      width: 68px;
-      height: 16px;
       border: 1px solid variables.$button_cancel_color;
     }
 
@@ -99,7 +98,7 @@
 
     .file-container__file-download-date {
       min-width: 131px;
-      margin-right: 5px;
+      margin-right: 10px;
 
       &::before {
         content: 'Дата скачивания';
@@ -109,7 +108,7 @@
     .button_download {
       width: 70px;
       height: 18px;
-      margin-right: 5px;
+      margin-right: 10px;
     }
 
     .button_delete {
@@ -155,6 +154,139 @@
       font-size: 11px;
       padding: 0 3px;
       z-index: 1;
+    }
+  }
+}
+
+@media (max-width: variables.$desktop) {
+
+  .file-container__file {
+
+    .file-container__top-area {
+      width: 620px;
+
+      .button_ok {
+        width: 60px;
+      }
+
+      .button_cancel {
+        width: 59px;
+      }
+    }
+
+    .file-container__bottom-area {
+
+      .file-container__file-upload-date,
+      .file-container__file-download-date {
+        min-width: 110px;
+      }
+
+      .file-container__file-size {
+        min-width: 99px;
+      }
+    }
+  }
+}
+
+@media (max-width: variables.$tablet) {
+
+  .file-container__file {
+    padding: 0;
+    border: none;
+    margin-bottom: 20px;
+
+    &:not(:last-child) {
+      padding: 0 0 25px;
+      border-bottom: 2px dashed variables.$main_color;
+    }
+
+    .file-info {
+      margin-top: -1px;
+      margin-bottom: 0;
+    }
+
+    .input {
+      margin-bottom: 0;
+    }
+
+    .filename-input-wrapper,
+    .comment-input-wrapper {
+      width: 342px;
+    }
+
+    .file-container__top-area {
+      width: 342px;
+
+      .file-container__file-name-area,
+      .file-container__file-comment-area,
+      .file-container__file-external-link-area {
+        flex-direction: column;
+        column-gap: 0;
+        margin-top: 10px;
+      }
+
+      .button_ok {
+        width: 60px;
+      }
+
+      .button_cancel {
+        width: 59px;
+      }
+
+      .file-container__filename-edit-button,
+      .file-container__comment-edit-button,
+      .file-container__file-external-link-button,
+      .file-container__file-external-link {
+        width: 310px;
+        margin-top: 10px;
+      }
+
+      .file-container__file-external-link {
+        margin-top: 0;
+      }
+    }
+
+    .file-container__bottom-area {
+      flex-wrap: wrap;
+      width: 342px;
+
+      .file-container__file-upload-date,
+      .file-container__file-download-date {
+        min-width: 110px;
+      }
+
+      .file-container__file-size {
+        min-width: 310px;
+      }
+
+      .file-info:not(:first-child) {
+        margin-left: 0;
+      }
+
+      .file-container__file-download-date {
+        width: 134px;
+
+        &.file-info {
+          margin-left: 10px;
+          margin-right: 0;
+        }
+      }
+
+      .file-container__file-upload-date {
+        width: 134px;
+      }
+
+      .button_download,
+      .button_delete {
+        width: 136px;
+        margin-top: 10px
+      }
+
+      .file-container__file-size,
+      .file-container__file-upload-date,
+      .file-container__file-download-date {
+        margin-top: 10px;
+      }
     }
   }
 }

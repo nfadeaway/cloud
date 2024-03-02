@@ -2,13 +2,14 @@
 
 .admin-panel-container {
   max-width: 800px;
-  padding: 8% 5% 0;
+  padding: 35px 0;
   margin: auto;
 
   .admin-panel-container__title {
     color: variables.$main_color;
     font-weight: 400;
     font-size: 24px;
+    margin-bottom: 15px;
   }
 }
 

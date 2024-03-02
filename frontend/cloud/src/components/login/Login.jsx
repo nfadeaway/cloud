@@ -1,11 +1,13 @@
-import { Link, useNavigate } from 'react-router-dom'
 import { useContext, useEffect, useRef, useState } from 'react'
-import { CloudContext } from '../../contexts/CloudContext'
-import './Login.scss'
-import Loader from '../common/Loader/Loader.jsx'
-import SystemMessage from '../common/SystemMessage/SystemMessage.jsx'
+import { Link, useNavigate } from 'react-router-dom'
 import useRequest from '../../hooks/useRequest.jsx'
 
+import Loader from '../common/Loader/Loader.jsx'
+import SystemMessage from '../common/SystemMessage/SystemMessage.jsx'
+
+import { CloudContext } from '../../contexts/CloudContext'
+
+import './Login.scss'
 
 const Login = () => {
 
@@ -14,8 +16,8 @@ const Login = () => {
   const [loginUsername, setLoginUsername] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
 
-  const [dataCSRF, loadingCSRF, errorCSRF, requestCSRF] = useRequest()
   const [dataLogin, loadingLogin, errorLogin, requestLogin] = useRequest()
+  const [dataLogout, loadingLogout, errorLogout, requestLogout] = useRequest()
 
   const loginInvalidDiv = useRef(null)
 
@@ -28,7 +30,6 @@ const Login = () => {
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRFToken': dataCSRF.result.csrf,
       },
       body: JSON.stringify(
         {
@@ -40,6 +41,10 @@ const Login = () => {
     await requestLogin('/api/login/', init)
   }
 
+  const logout = async () => {
+    await requestLogout('/api/logout/', {credentials: 'include'})
+  }
+
   useEffect(() => {
     if (dataLogin.status === 400) {
       dataLogin.result.detail && loginInvalidDiv.current.classList.remove('hidden')
@@ -49,46 +54,52 @@ const Login = () => {
         setUsername(dataLogin.result.username)
         setUserID(dataLogin.result.userID)
         setIsAdmin(dataLogin.result.isAdmin)
-        navigate('/dashboard')
+        dataLogin.result.isAdmin ? navigate('/admin-panel') : navigate('/dashboard')
       }, 2000)
     }
   }, [dataLogin])
 
   useEffect(() => {
-    if (!dataCSRF.result) {
-      console.log('запрос CSRF из Логина')
-      requestCSRF('/api/csrf/', {credentials: 'include'})
+    if (dataLogout.status === 200) {
+      setIsAuthenticated(false)
+      setUsername(null)
+      setUserID(null)
+      setIsAdmin(false)
     }
-  }, [])
+  }, [dataLogout])
 
-  useEffect(() => {
-    isAuthenticated && navigate('/dashboard')
-  }, [isAuthenticated])
 
   return (
     <section className="login-container">
       <div className="login-container__form">
         <form className="login-container__login-form" onSubmit={login}>
-          {loadingLogin
+          {loadingLogin || loadingLogout
             ? <Loader />
-            : errorLogin
+            : errorLogin || errorLogout
               ? <SystemMessage type="error" message="Ошибка связи с сервером" />
               : dataLogin.status && dataLogin.status === 200
                 ? <SystemMessage type="success" message='Успешный вход в систему' />
-                : (
+                : !isAuthenticated
+                  ?
+                    (
+                      <>
+                        <input onChange={(e) => setLoginUsername(e.target.value)} value={loginUsername} className="login-container__username-input input" type="text"
+                               placeholder="Имя пользователя" autoComplete="username" required/>
+                        <input onChange={(e) => setLoginPassword(e.target.value)} value={loginPassword} className="login-container__password-input input" type="password" placeholder="Пароль"
+                               autoComplete="current-password" required/>
+                        <div ref={loginInvalidDiv} className="login-container__login-invalid hidden">
+                          {dataLogin.status === 400 && dataLogin.result.detail}
+                        </div>
+                        <button className="login-container__button button" type="submit">Войти</button>
+                        <p className="login-container__description">Не зарегистрированы? <Link
+                          to="/registration">Зарегистрироваться</Link></p>
+                      </>
+                    )
+                  :
                   <>
-                    <input onChange={(e) => setLoginUsername(e.target.value)} value={loginUsername} className="login-container__username-input input" type="text"
-                           placeholder="Имя пользователя" autoComplete="username" required/>
-                    <input onChange={(e) => setLoginPassword(e.target.value)} value={loginPassword} className="login-container__password-input input" type="password" placeholder="Пароль"
-                           autoComplete="current-password" required/>
-                    <div ref={loginInvalidDiv} className="login-container__login-invalid hidden">
-                      {dataLogin.status === 400 && dataLogin.result.detail}
-                    </div>
-                    <button className="login-container__button button" type="submit">Войти</button>
-                    <p className="login-container__description">Не зарегистрированы? <Link
-                      to="/registration">Зарегистрироваться</Link></p>
+                    <div className="login-container__text">Вы уже авторизованы</div>
+                    <div className="login-container__button button logout-button" onClick={logout}>Выйти</div>
                   </>
-                )
           }
         </form>
       </div>

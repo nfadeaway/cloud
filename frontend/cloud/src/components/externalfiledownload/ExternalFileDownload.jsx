@@ -1,27 +1,24 @@
-import './ExternalFileDownload.scss'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import useDownloadFile from '../../hooks/useDownloadFile.jsx'
+
 import Loader from '../common/Loader/Loader.jsx'
 import SystemMessage from '../common/SystemMessage/SystemMessage.jsx'
+
+import './ExternalFileDownload.scss'
 
 const ExternalFileDownload = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const [dataDownloadFile, loadingDownloadFile, errorDownloadFile, requestDownloadFile] = useDownloadFile()
 
-  const downloadFile = async (e) => {
+  const downloadFile = async () => {
     await requestDownloadFile(location.pathname, {})
   }
 
   useEffect(() => {
     downloadFile()
   }, [])
-
-  useEffect(() => {
-    dataDownloadFile.status === 200 && setDownloadStatusFlag(true)
-    errorDownloadFile && setTimeout(() => {navigate('/')}, 2000)
-  }, [dataDownloadFile, errorDownloadFile])
 
   return (
     <div className="external-download-container">

@@ -1,9 +1,10 @@
-import { useContext, useEffect, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useContext, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import useRequest from '../../hooks/useRequest.jsx'
+
 import { CloudContext } from '../../contexts/CloudContext.js'
 
 import './Header.scss'
-import useRequest from '../../hooks/useRequest.jsx'
 
 const Header = () => {
 
@@ -11,10 +12,7 @@ const Header = () => {
   const [dataLogout, loadingLogout, errorLogout, requestLogout] = useRequest()
 
   const logout = async () => {
-    const init = {
-      credentials: 'include'
-    }
-    await requestLogout('/api/logout/', init)
+    await requestLogout('/api/logout/', {credentials: 'include'})
   }
 
   useEffect(() => {
@@ -36,7 +34,7 @@ const Header = () => {
             ? <li className="header__nav-item"><Link to="/login">Войти</Link></li>
             :
               <>
-                <li className="header__nav-item"><Link to="/dashboard">{username}</Link></li>
+                <li className="header__nav-item header__nav-item_username"><Link to="/dashboard">{username}</Link></li>
                 <li className="header__nav-item" onClick={logout}>Выйти</li>
               </>
           }

@@ -1,23 +1,27 @@
 import { useEffect, useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
-import Registration from './components/registration/Registration.jsx'
-import { CloudContext } from './contexts/CloudContext.js'
-import Login from './components/login/Login.jsx'
-import './App.scss'
-import Dashboard from './components/dashboard/Dashboard.jsx'
-import PrivateRoutes from './utils/PrivateRoutes.jsx'
-import Main from './components/main/Main.jsx'
-import Header from './components/header/Header.jsx'
 import useRequest from './hooks/useRequest.jsx'
-import ExternalFileDownload from './components/externalfiledownload/ExternalFileDownload.jsx'
+import PrivateRoutes from './utils/PrivateRoutes.jsx'
+
+import Header from './components/header/Header.jsx'
+import Main from './components/main/Main.jsx'
+import Login from './components/login/Login.jsx'
+import Registration from './components/registration/Registration.jsx'
 import AdminPanel from './components/adminpanel/AdminPanel.jsx'
-import AdminRoutes from './utils/AdminRoutes.jsx'
+import Dashboard from './components/dashboard/Dashboard.jsx'
+import ExternalFileDownload from './components/externalfiledownload/ExternalFileDownload.jsx'
+import Loader from './components/common/Loader/Loader.jsx'
+import SystemMessage from './components/common/SystemMessage/SystemMessage.jsx'
+
+import { CloudContext } from './contexts/CloudContext.js'
+
+import './App.scss'
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [username, setUsername] = useState(null)
-  const [userID, setUserID] = useState(null)
+  const [isAuthenticated, setIsAuthenticated] = useState(undefined)
+  const [isAdmin, setIsAdmin] = useState(undefined)
+  const [username, setUsername] = useState(undefined)
+  const [userID, setUserID] = useState(undefined)
   const [updateDataFlag, setUpdateDataFlag] = useState(false)
   const [dataSession, loadingSession, errorSession, requestSession] = useRequest()
 
@@ -27,37 +31,51 @@ function App() {
   }, [])
 
   useEffect(() => {
+    console.log(dataSession)
     if (dataSession.status === 200) {
       console.log('Сессия найдена', dataSession)
       setIsAuthenticated(true)
       setUserID(dataSession.result.userID)
       setUsername(dataSession.result.username)
       setIsAdmin(dataSession.result.isAdmin)
+    } else if (dataSession.status === 403 || errorSession) {
+      setIsAuthenticated(false)
+      setIsAdmin(false)
     }
-  }, [dataSession])
+  }, [dataSession, errorSession])
 
   return (
-    <CloudContext.Provider value={{
-      isAuthenticated, setIsAuthenticated,
-      username, setUsername,
-      userID, setUserID,
-      updateDataFlag, setUpdateDataFlag,
-      isAdmin, setIsAdmin
-    }}>
-      <Header />
-      <Routes>
-        <Route path="/" element={<Main/>} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/registration" element={<Registration />} />
-        <Route element={<AdminRoutes />}>
-          <Route path="/admin-panel" element={<AdminPanel />} exact />
-        </Route>
-        <Route element={<PrivateRoutes />}>
-          <Route path="/dashboard" element={<Dashboard />} exact />
-        </Route>
-        <Route path="/f/*" element={<ExternalFileDownload />} />
-      </Routes>
-    </CloudContext.Provider>
+    loadingSession || isAuthenticated === null || isAdmin === null
+      ? <Loader />
+        : errorSession
+        ? <SystemMessage type="error" message="Ошибка связи с сервером"/>
+          : isAuthenticated !== undefined
+            ?
+              (
+                <CloudContext.Provider value={{
+                    isAuthenticated, setIsAuthenticated,
+                    username, setUsername,
+                    userID, setUserID,
+                    updateDataFlag, setUpdateDataFlag,
+                    isAdmin, setIsAdmin
+                  }}>
+                <Header />
+                  <Routes>
+                  <Route path="/" element={<Main/>} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/registration" element={<Registration />} />
+                  <Route element={<PrivateRoutes isAllowed={isAuthenticated && isAdmin} redirectPath = '/' />}>
+                    <Route path="/admin-panel" element={<AdminPanel />} exact />
+                    <Route path="/dashboard/:selectedUserId" element={<Dashboard />} />
+                  </Route>
+                  <Route element={<PrivateRoutes isAllowed={isAuthenticated} redirectPath = '/login' />}>
+                    <Route path="/dashboard" element={<Dashboard />} exact />
+                  </Route>
+                  <Route path="/f/*" element={<ExternalFileDownload />} />
+                </Routes>
+                </CloudContext.Provider>
+              )
+            : null
   )
 }
 

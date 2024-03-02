@@ -1,8 +1,7 @@
-import successIcon from '../../../images/icons/success_icon.svg'
 import errorIcon from '../../../images/icons/error_icon.svg'
+import successIcon from '../../../images/icons/success_icon.svg'
 
 import './SystemMessage.scss'
-
 
 const SystemMessage = (props) => {
 

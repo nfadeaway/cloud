@@ -1,12 +1,17 @@
 import { useContext, useEffect, useState } from 'react'
-import addIcon from '../../images/icons/add_icon.svg'
-import getFileSize from '../../utils/getFileSize.js'
-import './Uploader.scss'
-import { CloudContext } from '../../contexts/CloudContext.js'
+import useRequest from '../../hooks/useRequest.jsx'
+import getShortFilename from '../../utils/getFilename.js'
+import getConvertedFileSize from '../../utils/getConvertedFileSize.js'
+
 import Loader from '../common/Loader/Loader.jsx'
 import SystemMessage from '../common/SystemMessage/SystemMessage.jsx'
-import getShortFilename from '../../utils/getFilename.js'
-import useRequest from '../../hooks/useRequest.jsx'
+
+import { CloudContext } from '../../contexts/CloudContext.js'
+
+import './Uploader.scss'
+import addIcon from '../../images/icons/add_icon.svg'
+import cancelIcon from '../../images/icons/cancel_icon.svg'
+import uploadIcon from '../../images/icons/upload_icon.svg'
 
 const Uploader = () => {
 
@@ -14,11 +19,14 @@ const Uploader = () => {
 
   const [file, setFile] = useState(null)
   const [comment, setComment] = useState('')
-  const [dataCSRF, loadingCSRF, errorCSRF, requestCSRF] = useRequest()
   const [dataUpload, loadingUpload, errorUpload, requestUpload] = useRequest('uploader')
 
   const fileHandler = (e) => {
     setFile(e.target.files[0])
+  }
+
+  const cancelFile = () => {
+    setFile(null)
   }
 
   const uploadFile = async () => {
@@ -31,20 +39,11 @@ const Uploader = () => {
     const init = {
       method: 'POST',
       credentials: 'include',
-      headers: {
-        'X-CSRFToken': dataCSRF.result.csrf
-      },
+      headers: {},
       body: formData
     }
     await requestUpload('/api/files/upload/', init)
   }
-
-  useEffect(() => {
-    if (!dataCSRF.result) {
-      console.log('запрос CSRF из Аплоадера')
-      requestCSRF('/api/csrf/', {credentials: 'include'})
-    }
-  }, [])
 
   useEffect(() => {
     setTimeout(() => {
@@ -79,15 +78,23 @@ const Uploader = () => {
                       ? <SystemMessage type="error" message={dataUpload.result.content[0]} />
                       :
                         <>
-                          <div className="upload-container__file-info-area_top">
-                            <div className="upload-container__file-info">
-                              <div className="upload-container__filename">Имя файла: {getShortFilename(file.name, 50)}</div>
-                              <div className="upload-container__filesize">Размер файла: {getFileSize(file.size)}</div>
+                          <div className="upload-container__file">
+                            <div className="upload-container__file-info-area_top">
+                                <div
+                                  className="upload-container__filename file-info">{getShortFilename(file.name, 50)}</div>
+                                <div
+                                  className="upload-container__filesize file-info">{getConvertedFileSize(file.size)}</div>
+
+                                <div className="upload-container__button button button_ok" onClick={uploadFile}>
+                                  <img src={uploadIcon} alt="Иконка отправки файла" className="upload-container__icon"/>
+                                </div>
+                                <div className="upload-container__button button button_cancel" onClick={cancelFile}>
+                                  <img src={cancelIcon} alt="Иконка отмены" className="upload-container__icon"/>
+                                </div>
                             </div>
-                            <button className="upload-container__button button" onClick={uploadFile}>Отправить</button>
+                            <input onChange={(e) => setComment(e.target.value)} value={comment} className="upload-container__comment-input input" type="text"
+                                   placeholder="Комментарий к файлу"/>
                           </div>
-                          <input onChange={(e) => setComment(e.target.value)} value={comment} className="upload-container__comment-input input" type="text"
-                                 placeholder="Комментарий к файлу"/>
                         </>
               }
             </div>

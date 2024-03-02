@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import getCSRFToken from '../utils/getCSRFToken.js'
 
 const useRequest = (mode) => {
   const [data, setData] = useState({});
@@ -6,28 +7,35 @@ const useRequest = (mode) => {
   const [error, setError] = useState(null);
 
   const request = async (url, init) => {
-    console.log('запуск')
     setLoading(true)
+
+    console.log('запуск реквеста')
+
+    if (init.method) {
+      const CSRFToken = await getCSRFToken()
+      init.headers['X-CSRFToken'] = CSRFToken
+    }
+
     try {
       const response = await fetch(import.meta.env.VITE_APP_SERVER_URL + url, init)
-      console.log(response)
-      const statusCode = response.status
       if (mode === 'delete') {
         setData({status: response.status})
       } else {
         const result = await response.json()
         setData({status: response.status, result})
-        console.log({status: statusCode, result})
+
+        console.log('Ответ от сервера', {status: response.status, result})
+
         setTimeout(() => {
           mode === 'uploader' && setData({})
           !response.ok && setData({})
         }, 2000)
       }
     } catch (error) {
+      setError(error)
       setTimeout(() => {
         setError(null)
       }, 2000)
-      setError(error)
     } finally {
       setLoading(false)
     }

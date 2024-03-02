@@ -1,34 +1,32 @@
-import './File.scss'
-import getFileSize from '../../utils/getFileSize.js'
-import getTime from '../../utils/getTime.js'
 import { useContext, useEffect, useRef, useState } from 'react'
-
-import editIcon from '../../images/icons/edit_icon.svg'
-import okIcon from '../../images/icons/ok_icon.svg'
-import cancelIcon from '../../images/icons/cancel_icon.svg'
-import generateLinkIcon from '../../images/icons/generate_link_icon.svg'
-import shareIcon from '../../images/icons/share_icon.svg'
-import copyIcon from '../../images/icons/copy_icon.svg'
-import downloadIcon from '../../images/icons/download_icon.svg'
-import deleteIcon from '../../images/icons/delete_icon.svg'
-import { CloudContext } from '../../contexts/CloudContext.js'
 import useRequest from '../../hooks/useRequest.jsx'
 import useDownloadFile from '../../hooks/useDownloadFile.jsx'
+import getConvertedFileSize from '../../utils/getConvertedFileSize.js'
+import getTime from '../../utils/getTime.js'
 import Loader from '../common/Loader/Loader.jsx'
 import SystemMessage from '../common/SystemMessage/SystemMessage.jsx'
 
-const File = (props) => {
-  console.log(props)
+import { CloudContext } from '../../contexts/CloudContext.js'
 
-  const {username, setUpdateDataFlag} = useContext(CloudContext)
+import './File.scss'
+import cancelIcon from '../../images/icons/cancel_icon.svg'
+import copyIcon from '../../images/icons/copy_icon.svg'
+import deleteIcon from '../../images/icons/delete_icon.svg'
+import downloadIcon from '../../images/icons/download_icon.svg'
+import editIcon from '../../images/icons/edit_icon.svg'
+import generateLinkIcon from '../../images/icons/generate_link_icon.svg'
+import okIcon from '../../images/icons/ok_icon.svg'
+import shareIcon from '../../images/icons/share_icon.svg'
+
+const File = (props) => {
+
+  const {setUpdateDataFlag} = useContext(CloudContext)
 
   const [editFilenameFlag, setEditFilenameFlag] = useState(false)
   const [editCommentFlag, setEditCommentFlag] = useState(false)
-  // const [externalLinkFlag, setExternalLinkFlag] = useState(false)
   const [filename, setFilename] = useState('')
   const [comment, setComment] = useState('')
 
-  const [dataCSRF, loadingCSRF, errorCSRF, requestCSRF] = useRequest()
   const [dataUpdate, loadingUpdate, errorUpdate, requestUpdate] = useRequest()
   const [dataDelete, loadingDelete, errorDelete, requestDelete] = useRequest('delete')
   const [dataDownloadFile, loadingDownloadFile, errorDownloadFile, requestDownloadFile] = useDownloadFile()
@@ -77,7 +75,6 @@ const File = (props) => {
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRFToken': dataCSRF.result.csrf
       },
       body: JSON.stringify(body)
     }
@@ -96,18 +93,10 @@ const File = (props) => {
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRFToken': dataCSRF.result.csrf
       },
     }
     await requestDelete(`/api/files/${fileId}/`, init)
   }
-
-  useEffect(() => {
-    if (!dataCSRF.result) {
-      console.log('запрос CSRF из Файла')
-      requestCSRF('/api/csrf/', {credentials: 'include'})
-    }
-  }, [])
 
   useEffect(() => {
     if (editFilenameFlag) {
@@ -121,7 +110,6 @@ const File = (props) => {
   }, [editFilenameFlag, editCommentFlag])
 
   useEffect(() => {
-    console.log(dataDelete)
     if (dataUpdate.status === 200 || dataDownloadFile.status === 200 || dataDelete.status === 204) {
       setUpdateDataFlag(true)
     }
@@ -219,7 +207,7 @@ const File = (props) => {
                       </div>
                     </div>
                     <div className="file-container__bottom-area">
-                      <div className="file-container__file-size file-info">{getFileSize(props.file.size)}</div>
+                      <div className="file-container__file-size file-info">{getConvertedFileSize(props.file.size)}</div>
                       <div className="file-container__file-upload-date file-info">{getTime(props.file.date_uploaded)}</div>
                       <div className="file-container__file-download-date file-info">{getTime(props.file.last_download)}</div>
                       <div data-id={props.file.id} className="file-container__file-download-button button button_download"

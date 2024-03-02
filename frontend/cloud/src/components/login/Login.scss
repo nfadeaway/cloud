@@ -2,10 +2,13 @@
 
 .login-container {
   width: 360px;
-  padding: 8% 0 0;
+  padding: 78px 0 0;
   margin: auto;
 
   .login-container__login-form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     max-width: 360px;
     height: 198px;
     margin: 0 auto;
@@ -33,5 +36,15 @@
         text-transform: uppercase;
       }
     }
+  }
+
+  .login-container__text {
+    color: variables.$main_color;
+    margin-bottom: 15px;
+  }
+
+  .logout-button {
+    font-weight: 400;
+    width: unset;
   }
 }

@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import './Registration.scss'
-import SystemMessage from '../common/SystemMessage/SystemMessage.jsx'
-import Loader from '../common/Loader/Loader.jsx'
 import useRequest from '../../hooks/useRequest.jsx'
+
+import Loader from '../common/Loader/Loader.jsx'
+import SystemMessage from '../common/SystemMessage/SystemMessage.jsx'
+
+import './Registration.scss'
 
 const Registration = () => {
 

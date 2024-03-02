@@ -1,1 +1,128 @@
 @use '../../variables';
+
+.user-container {
+  display: flex;
+  width: 100%;
+  height: 106px;
+  flex-direction: column;
+  padding: 0 0 30px;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid variables.$main_element_color;
+    margin-bottom: 30px;
+  }
+
+  .user-info {
+    position: relative;
+    height: 16px;
+    padding: 15px 15px;
+    border: 1px solid #4caf50;
+    font-size: 14px;
+
+    &::before {
+      position: absolute;
+      top: -6px;
+      left: 12px;
+      background-color: #ffffff;
+      font-size: 11px;
+      padding: 0 3px;
+    }
+  }
+
+  .user-container__username {
+    min-width: 132px;
+    margin-right: 5px;
+
+    &::before {
+      content: 'Имя пользователя';
+    }
+  }
+
+  .user-container__is-admin {
+    min-width: 82px;
+    margin-right: 5px;
+    text-align: center;
+
+    &::before {
+      content: 'Администратор';
+    }
+  }
+
+  .user-container__files {
+    min-width: 80px;
+    margin-right: 5px;
+    text-align: center;
+
+    &::before {
+      content: 'Кол-во файлов';
+    }
+  }
+
+  .user-container__storage-size {
+    min-width: 100px;
+    margin-right: 5px;
+    text-align: center;
+
+    &::before {
+      content: 'Размер файлов';
+    }
+  }
+
+  .button_open {
+    height: 18px;
+    margin-right: 5px;
+  }
+
+  .button_delete,
+  .button_disabled {
+    height: 18px;
+  }
+
+  .button_disabled {
+    background-color: variables.$button_disabled;
+    cursor: not-allowed;
+  }
+
+  .user-container__checkbox {
+    width: 16px;
+    height: 16px;
+  }
+
+  .user-container__top-area,
+  .user-container__bottom-area {
+    display: flex;
+    width: 100%;
+  }
+
+  .user-container__top-area {
+    margin-bottom: 10px;
+  }
+
+  .user-container__email {
+    min-width: 132px;
+    margin-right: 5px;
+
+    &::before {
+      content: 'Email пользователя';
+    }
+  }
+
+  .user-container__date-joined {
+    min-width: 149px;
+    margin-right: 5px;
+
+    &::before {
+      content: 'Дата регистрации';
+    }
+  }
+
+  .user-container__last-login {
+    min-width: 150px;
+    margin-right: 5px;
+
+    &::before {
+      content: 'Последний вход';
+    }
+  }
+}
+
