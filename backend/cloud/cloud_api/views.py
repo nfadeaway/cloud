@@ -3,10 +3,10 @@ import os
 from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.hashers import make_password
-from django.http import FileResponse, JsonResponse
+from django.http import FileResponse
 from django.middleware.csrf import get_token
 from django.utils import timezone
-from rest_framework import viewsets, generics, status
+from rest_framework import generics, status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.exceptions import NotFound
 from rest_framework.exceptions import ValidationError
@@ -95,11 +95,15 @@ class CSRFTokenView(APIView):
 class CloudUserAPIRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = CloudUser.objects.all()
     serializer_class = CloudUserSerializer
-    permission_classes = [IsAdminOrUser]
+    permission_classes = [IsAdmin]
+
+    def perform_destroy(self, instance):
+        instance.delete()
+        instance.delete_storage()
 
 
 class CloudUserAPIList(generics.ListAPIView):
-    queryset = CloudUser.objects.all()
+    queryset = CloudUser.objects.all().order_by('-date_joined')
     serializer_class = CloudUsersDetailSerializer
     permission_classes = [IsAdmin]
 
@@ -143,13 +147,10 @@ class FileAPIRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
             serializer.save()
 
 
-class FileAPIList(generics.ListAPIView):
-    serializer_class = FileSerializer
-    permission_classes = [IsAdminOrFileOwner]
-
-    def get_queryset(self):
-        pk = self.kwargs.get('pk')
-        return File.objects.filter(cloud_user=self.request.user).order_by('date_uploaded')
+class UserFilesAPIRetrieve(generics.RetrieveAPIView):
+    queryset = CloudUser.objects.all()
+    serializer_class = CloudUsersDetailSerializer
+    permission_classes = [IsAdminOrUser]
 
 
 class FileAPIDownload(generics.RetrieveAPIView):
@@ -167,7 +168,9 @@ class FileAPIDownload(generics.RetrieveAPIView):
         file_path = f'{MEDIA_ROOT}/{file.content}'
         if os.path.exists(file_path):
             response = FileResponse(open(file_path, 'rb'), as_attachment=True)
+            response['Access-Control-Expose-Headers'] = 'Filename'
             response['Content-Disposition'] = f'attachment; filename="{file}"'
+            response['Filename'] = file
             file.last_download = timezone.now()
             file.save()
             return response
