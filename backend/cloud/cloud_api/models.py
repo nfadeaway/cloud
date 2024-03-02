@@ -1,12 +1,18 @@
+import shutil
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from cloud.settings import MEDIA_ROOT, MEDIA_URL
 from .utils import get_user_directory_path
 
 
 class CloudUser(AbstractUser):
     email = models.EmailField(unique=True)
     storage_directory = models.CharField(max_length=100, blank=True)
+
+    def delete_storage(self):
+        shutil.rmtree(MEDIA_ROOT + '\\' + self.storage_directory, ignore_errors=True)
 
     def __str__(self):
         return self.username

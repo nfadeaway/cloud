@@ -10,7 +10,7 @@ class CloudUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CloudUser
-        fields = ['username', 'password', 'email']
+        fields = ['username', 'password', 'email', 'is_superuser']
 
     def validate_username(self, value):
         """
@@ -34,9 +34,15 @@ class CloudUserSerializer(serializers.ModelSerializer):
 
 
 class FileSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = File
         fields = '__all__'
+
+
+class FileSerializerUserDetail(serializers.ModelSerializer):
+    class Meta:
+        model = CloudUser
 
 
 class CloudUsersDetailSerializer(serializers.ModelSerializer):
@@ -44,4 +50,4 @@ class CloudUsersDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CloudUser
-        fields = ['id', 'username', 'files']
+        fields = ['id', 'username', 'email', 'date_joined', 'last_login', 'files', 'is_superuser']

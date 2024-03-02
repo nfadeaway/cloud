@@ -1,8 +1,8 @@
 from django.urls import path
 
-from .views import CloudUserAPICreate, CloudUserAPIList, CloudUserAPIRetrieveUpdateDestroy, FileAPIList, FileAPICreate, \
+from .views import CloudUserAPICreate, CloudUserAPIList, CloudUserAPIRetrieveUpdateDestroy, FileAPICreate, \
     FileAPIRetrieveUpdateDestroy, FileAPIDownload, FileAPICreateExternalLink, FileAPIExternalDownload, UserLoginAPIView, \
-    UserLogoutAPIView, SessionView, CSRFTokenView
+    UserLogoutAPIView, SessionView, CSRFTokenView, UserFilesAPIRetrieve
 
 urlpatterns = [
     path('api/login/', UserLoginAPIView.as_view()),
@@ -14,7 +14,7 @@ urlpatterns = [
     path('api/users/registration/', CloudUserAPICreate.as_view()),
     path('api/users/<int:pk>/', CloudUserAPIRetrieveUpdateDestroy.as_view()),
 
-    path('api/files/', FileAPIList.as_view()),
+    path('api/userfiles/<int:pk>/', UserFilesAPIRetrieve.as_view()),
     path('api/files/upload/', FileAPICreate.as_view()),
     path('api/files/<int:pk>/', FileAPIRetrieveUpdateDestroy.as_view()),
     path('api/files/<int:pk>/download/', FileAPIDownload.as_view()),
