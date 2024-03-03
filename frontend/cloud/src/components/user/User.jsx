@@ -16,10 +16,12 @@ import openIcon from '../../images/icons/open_icon.svg'
 
 const User = (props) => {
 
-  const navigate = useNavigate()
   const {setUpdateDataFlag, userID} = useContext(CloudContext)
+
   const [dataDelete, loadingDelete, errorDelete, requestDelete] = useRequest('delete')
   const [dataAdminRights, loadingAdminRights, errorAdminRights, requestAdminRights] = useRequest()
+
+  const navigate = useNavigate()
 
   const goToUserDashboard = (e) => {
     userID === +e.currentTarget.dataset.id
@@ -57,7 +59,7 @@ const User = (props) => {
   }
 
   useEffect(() => {
-    dataDelete.status === 204 || dataAdminRights.status === 200 && setUpdateDataFlag(true)
+    (dataDelete.status === 204 || dataAdminRights.status === 200) && setUpdateDataFlag(true)
   }, [dataDelete, dataAdminRights])
 
   return (

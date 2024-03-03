@@ -160,7 +160,7 @@
           grid-template:
                   'filename filename'
                   'filesize filesize'
-                  'btn_ok btn_cancel';
+                  'btn-ok btn-cancel';
           column-gap: 10px;
           flex-direction: column;
           align-items: center;
@@ -179,12 +179,12 @@
           }
 
           .button_ok {
-            grid-area: btn_ok;
+            grid-area: btn-ok;
 
           }
 
           .button_cancel {
-            grid-area: btn_cancel;
+            grid-area: btn-cancel;
           }
 
           .button_ok,

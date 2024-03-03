@@ -20,7 +20,6 @@ const Login = () => {
   const [dataLogout, loadingLogout, errorLogout, requestLogout] = useRequest()
 
   const loginInvalidDiv = useRef(null)
-
   const navigate = useNavigate()
 
   const login = async (e) => {

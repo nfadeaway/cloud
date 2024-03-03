@@ -6,12 +6,10 @@ const useDownloadFile = () => {
   const [error, setError] = useState(null)
 
   const request = async (url, init) => {
-    console.log('скачиваем файл')
     setLoading(true)
     try {
       const response = await fetch(import.meta.env.VITE_APP_SERVER_URL + url, init)
       const headers = Object.fromEntries(response.headers.entries())
-      console.log(headers)
       const statusCode = response.status
       if (response.status === 200) {
         const result = await response.blob()

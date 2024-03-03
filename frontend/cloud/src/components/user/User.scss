@@ -5,11 +5,12 @@
   width: 100%;
   height: 106px;
   flex-direction: column;
-  padding: 0 0 30px;
+  padding: 0;
 
   &:not(:last-child) {
     border-bottom: 1px solid variables.$main_element_color;
     margin-bottom: 30px;
+    padding-bottom: 30px;
   }
 
   .user-info {
@@ -81,6 +82,11 @@
   .button_disabled {
     background-color: variables.$button_disabled;
     cursor: not-allowed;
+
+    &:hover,
+    &:active {
+      background-color: variables.$button_disabled;
+    }
   }
 
   .user-container__checkbox {
@@ -126,3 +132,123 @@
   }
 }
 
+@media (max-width: variables.$desktop) {
+
+  .user-container {
+
+    &:not(:last-child) {
+      border-bottom: 1px solid variables.$main_element_color;
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+    }
+  }
+}
+
+@media (max-width: variables.$tablet) {
+
+  .user-container {
+    position: relative;
+    box-sizing: border-box;
+    padding: 10px;
+    height: unset;
+
+    &:not(:last-child) {
+      margin-bottom: 10px;
+    }
+
+    .user-container__top-area {
+      display: grid;
+      grid-template:
+              'username . .'
+              'isadmin files size'
+              'open-btn delete-btn .';
+      gap: 10px;
+      margin-bottom: 0;
+
+      .user-container__username {
+        grid-area: username;
+        min-width: 134px;
+      }
+
+      .user-container__is-admin {
+        grid-area: isadmin;
+        width: 75px;
+        min-width: unset;
+        z-index: 1;
+      }
+
+      .user-container__files {
+        grid-area: files;
+        left: -60px;
+        width: 76px;
+        min-width: unset;
+      }
+
+      .user-container__storage-size {
+        grid-area: size;
+        left: -118px;
+        width: 75px;
+        min-width: unset;
+      }
+
+      .user-container__open-storage-button {
+        grid-area: open-btn;
+        width: 136px;
+        margin-top: 56px;
+      }
+
+      .user-container__user-delete-button {
+        grid-area: delete-btn;
+        position: relative;
+        left: -1px;
+        width: 136px;
+        margin-top: 56px;
+      }
+
+      .user-container__username,
+      .user-container__is-admin,
+      .user-container__files,
+      .user-container__storage-size,
+      .user-container__open-storage-button {
+        margin-right: 0;
+      }
+    }
+
+    .user-container__bottom-area {
+      position: absolute;
+      top: 67px;
+      left: 10px;
+      display: grid;
+      grid-template:
+              '. email'
+              'date-joined last-login';
+      gap: 10px;
+
+      .user-container__email {
+        grid-area: email;
+        top: -57px;
+        left: -10px;
+        width: 134px
+      }
+
+      .user-container__date-joined {
+        grid-area: date-joined;
+        width: 134px;
+        min-width: unset;
+      }
+
+      .user-container__last-login {
+        grid-area: last-login;
+        left: -10px;
+        width: 134px;
+        min-width: unset;
+      }
+
+      .user-container__email,
+      .user-container__date-joined,
+      .user-container__last-login {
+        margin-right: 0;
+      }
+    }
+  }
+}

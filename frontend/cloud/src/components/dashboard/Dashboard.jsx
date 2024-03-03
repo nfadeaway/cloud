@@ -13,12 +13,10 @@ import './Dashboard.scss'
 
 const Dashboard = () => {
   const { selectedUserId } = useParams()
-  console.log(selectedUserId)
   const {updateDataFlag, setUpdateDataFlag, isAuthenticated, userID} = useContext(CloudContext)
   const [dataFiles, loadingFiles, errorFiles, requestFiles] = useRequest()
 
   useEffect(() => {
-    console.log(selectedUserId)
     isAuthenticated && requestFiles(`/api/userfiles/${selectedUserId ? selectedUserId : userID}/`, {credentials: 'include'})
   }, [selectedUserId])
 

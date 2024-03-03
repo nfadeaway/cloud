@@ -26,14 +26,11 @@ function App() {
   const [dataSession, loadingSession, errorSession, requestSession] = useRequest()
 
   useEffect(() => {
-    console.log('Проверяем текущую сессию')
     requestSession('/api/session/', {credentials: 'include'})
   }, [])
 
   useEffect(() => {
-    console.log(dataSession)
     if (dataSession.status === 200) {
-      console.log('Сессия найдена', dataSession)
       setIsAuthenticated(true)
       setUserID(dataSession.result.userID)
       setUsername(dataSession.result.username)

@@ -2,14 +2,12 @@ import { useState } from 'react'
 import getCSRFToken from '../utils/getCSRFToken.js'
 
 const useRequest = (mode) => {
-  const [data, setData] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [data, setData] = useState({})
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
   const request = async (url, init) => {
     setLoading(true)
-
-    console.log('запуск реквеста')
 
     if (init.method) {
       const CSRFToken = await getCSRFToken()
@@ -23,9 +21,6 @@ const useRequest = (mode) => {
       } else {
         const result = await response.json()
         setData({status: response.status, result})
-
-        console.log('Ответ от сервера', {status: response.status, result})
-
         setTimeout(() => {
           mode === 'uploader' && setData({})
           !response.ok && setData({})
