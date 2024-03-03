@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import useRequest from './hooks/useRequest.jsx'
 import PrivateRoutes from './utils/PrivateRoutes.jsx'
 
@@ -69,6 +69,7 @@ function App() {
                     <Route path="/dashboard" element={<Dashboard />} exact />
                   </Route>
                   <Route path="/f/*" element={<ExternalFileDownload />} />
+                  <Route path="*" element={<Navigate to='/' replace />} />
                 </Routes>
                 </CloudContext.Provider>
               )

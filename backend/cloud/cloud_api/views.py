@@ -159,7 +159,7 @@ class FileAPIRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         else:
             old_comment = serializer.instance.comment
             serializer.save()
-            logger.info(f'Пользователь {self.request.user} изменил комментарий файла {serializer.instance.filename} с "{old_comment}" на "{serializer.validated_data['comment']}"')
+            logger.info(f'Пользователь {self.request.user} изменил данные файла {serializer.instance.filename}')
 
 
 class UserFilesAPIRetrieve(generics.RetrieveAPIView):
@@ -189,10 +189,10 @@ class FileAPIDownload(generics.RetrieveAPIView):
             response['Filename'] = file
             file.last_download = timezone.now()
             file.save()
-            logger.info(f'Успешно скачан файл {file_path}')
+            logger.info(f'Успешно скачан файл {file.content}')
             return response
         else:
-            logger.error(f'Файл отсутствует по пути {file_path}')
+            logger.error(f'Файл отсутствует по пути {file.content}')
             return Response({'detail': 'Файл не найден'}, status=status.HTTP_404_NOT_FOUND)
 
 
@@ -215,10 +215,10 @@ class FileAPIExternalDownload(generics.RetrieveAPIView):
             response['Filename'] = file
             file.last_download = timezone.now()
             file.save()
-            logger.info(f'Успешно скачан файл {file_path}')
+            logger.info(f'Успешно скачан файл {file.content}')
             return response
         else:
-            logger.error(f'Файл отсутствует по пути {file_path}')
+            logger.error(f'Файл отсутствует по пути {file.content}')
             return Response({'detail': 'Файл не найден'}, status=status.HTTP_404_NOT_FOUND)
 
 
