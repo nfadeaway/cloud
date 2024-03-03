@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import logging
 from pathlib import Path
 import os
 from dotenv import load_dotenv
@@ -172,3 +173,33 @@ CORS_ALLOWED_ORIGINS = [
 # PROD ONLY
 CSRF_COOKIE_SECURE = os.getenv('PROD')
 SESSION_COOKIE_SECURE = os.getenv('PROD')
+
+
+# LOGGING
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+
+    'formatters': {
+        'console_format': {
+            'format': '{asctime} : {levelname} : {module} : {filename} : {message}',
+            'style': '{',
+        },
+    },
+
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'console_format',
+        },
+    },
+
+    'loggers': {
+        'main': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+            'propagate': True,
+        },
+    },
+}

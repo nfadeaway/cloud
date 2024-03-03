@@ -1,4 +1,5 @@
 import os
+import logging
 
 from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ObjectDoesNotExist
@@ -20,6 +21,7 @@ from .permissions import IsAdmin, IsAdminOrUser, IsAdminOrFileOwner
 from .serializers import CloudUserSerializer, FileSerializer, CloudUsersDetailSerializer
 from .utils import generate_external_link_key
 
+logger = logging.getLogger('main')
 
 class CloudUserAPICreate(generics.CreateAPIView):
     queryset = CloudUser.objects.all()
@@ -29,6 +31,7 @@ class CloudUserAPICreate(generics.CreateAPIView):
         username = serializer.validated_data['username']
         password = make_password(serializer.validated_data['password'])
         serializer.save(storage_directory=username, password=password, is_staff=True, is_active=True)
+        logger.info(f'Зарегистрирован новый пользователь {username}')
 
 
 class UserLoginAPIView(APIView):
@@ -44,9 +47,11 @@ class UserLoginAPIView(APIView):
         user = authenticate(username=username, password=password)
 
         if user is None:
+            logger.warning(f'Неудачная попытка входа в систему')
             return Response({'detail': 'Неверные данные.'}, status=status.HTTP_400_BAD_REQUEST)
         else:
             login(request, user)
+            logger.info(f'Пользователь {username} успешно вошёл в систему')
             return Response(
                 {
                     'detail': 'Успешный вход в систему.',
@@ -62,9 +67,12 @@ class UserLogoutAPIView(APIView):
     @staticmethod
     def get(request, format=None):
         if not request.user.is_authenticated:
+            logger.error(f'Попытка выхода из системы неаутентифицированного пользователя')
             return Response({'detail': 'Пользователь не аутентифицирован'}, status=status.HTTP_400_BAD_REQUEST)
 
+        logger.info(f'Пользователь {request.user} вышел из системы')
         logout(request)
+
         return Response({'detail': 'Успешный выход из системы.'}, status=status.HTTP_200_OK)
 
 
@@ -100,6 +108,7 @@ class CloudUserAPIRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     def perform_destroy(self, instance):
         instance.delete()
         instance.delete_storage()
+        logger.info(f'Пользователь {instance} удален')
 
 
 class CloudUserAPIList(generics.ListAPIView):
@@ -120,6 +129,7 @@ class FileAPICreate(generics.CreateAPIView):
         uploaded_file_name = serializer.validated_data['content'].name
         uploaded_file_size = serializer.validated_data['content'].size
         serializer.save(filename=uploaded_file_name, size=uploaded_file_size)
+        logger.info(f'Пользователь {serializer.validated_data['cloud_user']} загрузил файл {serializer.validated_data['content'].name}')
 
 
 class FileAPIRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
@@ -132,19 +142,24 @@ class FileAPIRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         path = instance.content.path
         instance.delete()
         storage.delete(path)
+        logger.info(f'Файл {instance} пользователя {instance.cloud_user} удалён')
 
     def perform_update(self, serializer):
         if 'filename' in serializer.validated_data:
             file_exist = self.queryset.filter(filename=serializer.validated_data['filename']).filter(cloud_user=self.request.user)
             if file_exist:
                 raise ValidationError({'content': ['Файл с таким именем уже существует']})
+            old_name = serializer.instance.filename
             old_path = serializer.instance.content.path
             new_filename = serializer.validated_data['filename']
             content = serializer.instance.cloud_user.username + '/' + new_filename
             os.rename(old_path, serializer.instance.content.storage.location + '\\' + serializer.instance.cloud_user.username + '\\' + new_filename)
             serializer.save(content=content)
+            logger.info(f'Пользователь {self.request.user} изменил имя файла {old_name} на {new_filename}')
         else:
+            old_comment = serializer.instance.comment
             serializer.save()
+            logger.info(f'Пользователь {self.request.user} изменил комментарий файла {serializer.instance.filename} с "{old_comment}" на "{serializer.validated_data['comment']}"')
 
 
 class UserFilesAPIRetrieve(generics.RetrieveAPIView):
@@ -163,6 +178,7 @@ class FileAPIDownload(generics.RetrieveAPIView):
         try:
             file = self.queryset.get(pk=pk)
         except ObjectDoesNotExist:
+            logger.error(f'Файл с ключом {pk} не найден в базе данных')
             raise NotFound(detail=f'Запись о файле c id {pk} не найдена в базе данных')
         self.check_object_permissions(request, file)
         file_path = f'{MEDIA_ROOT}/{file.content}'
@@ -173,8 +189,10 @@ class FileAPIDownload(generics.RetrieveAPIView):
             response['Filename'] = file
             file.last_download = timezone.now()
             file.save()
+            logger.info(f'Успешно скачан файл {file_path}')
             return response
         else:
+            logger.error(f'Файл отсутствует по пути {file_path}')
             return Response({'detail': 'Файл не найден'}, status=status.HTTP_404_NOT_FOUND)
 
 
@@ -187,6 +205,7 @@ class FileAPIExternalDownload(generics.RetrieveAPIView):
         try:
             file = self.queryset.get(external_link_key=link_key)
         except ObjectDoesNotExist:
+            logger.error(f'Файл с внешним ключом {link_key} не найден в базе данных')
             raise ValidationError(detail=f'Запись о файле c ключом {link_key} не найдена в базе данных')
         file_path = f'{MEDIA_ROOT}/{file.content}'
         if os.path.exists(file_path):
@@ -196,8 +215,10 @@ class FileAPIExternalDownload(generics.RetrieveAPIView):
             response['Filename'] = file
             file.last_download = timezone.now()
             file.save()
+            logger.info(f'Успешно скачан файл {file_path}')
             return response
         else:
+            logger.error(f'Файл отсутствует по пути {file_path}')
             return Response({'detail': 'Файл не найден'}, status=status.HTTP_404_NOT_FOUND)
 
 
@@ -211,6 +232,7 @@ class FileAPICreateExternalLink(generics.RetrieveAPIView):
         try:
             file = self.queryset.get(pk=pk)
         except ObjectDoesNotExist:
+            logger.error(f'Файл с ключом {pk} не найден в базе данных')
             raise NotFound(detail=f'Запись о файле c id {pk} не найдена в базе данных')
         self.check_object_permissions(request, file)
         for i in range(25):
@@ -220,7 +242,9 @@ class FileAPICreateExternalLink(generics.RetrieveAPIView):
             else:
                 file.external_link_key = external_link_key
                 file.save()
+                logger.info(f'Успешная генерация внешнего ключа для файла {file.content}')
                 return self.retrieve(request, *args, **kwargs)
         else:
+            logger.error(f'Ошибка генерации внешнего ключа для файла {file.content}')
             return Response({'detail': 'Не удалось создать ключ внешней ссылки, обратитесь к администратору'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -1,4 +1,5 @@
 import shutil
+import logging
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -6,6 +7,7 @@ from django.db import models
 from cloud.settings import MEDIA_ROOT, MEDIA_URL
 from .utils import get_user_directory_path
 
+logger = logging.getLogger('main')
 
 class CloudUser(AbstractUser):
     email = models.EmailField(unique=True)
@@ -13,6 +15,7 @@ class CloudUser(AbstractUser):
 
     def delete_storage(self):
         shutil.rmtree(MEDIA_ROOT + '\\' + self.storage_directory, ignore_errors=True)
+        logger.info(f'Директория пользователя {self.username} удалена')
 
     def __str__(self):
         return self.username

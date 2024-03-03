@@ -31,3 +31,11 @@
     width: unset;
   }
 }
+
+@media (max-width: variables.$tablet) {
+
+  .external-download-container__file {
+    padding: 20px;
+    font-size: 14px;
+  }
+}
