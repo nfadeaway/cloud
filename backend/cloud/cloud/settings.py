@@ -10,7 +10,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
-import logging
 from pathlib import Path
 import os
 from dotenv import load_dotenv
@@ -30,8 +29,8 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = not os.getenv('PROD')
 
-ALLOWED_HOSTS = ['127.0.0.1']
-
+# ALLOWED_HOSTS = [os.getenv('ALLOWED_HOSTS')]
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -129,7 +128,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
-
+STATIC_ROOT = '/static/'
 
 # Media files
 
@@ -162,12 +161,19 @@ SESSION_COOKIE_HTTPONLY = True
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
+    'http://0.0.0.0',
+    'http://localhost',
+    'http://127.0.0.1',
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
+    # 'http://localhost:5173',
+    # 'http://127.0.0.1:5173',
+    # 'http://127.0.0.1:4173',
+    'http://0.0.0.0',
+    'http://localhost',
+    'http://127.0.0.1',
 ]
 
 # PROD ONLY

@@ -4,7 +4,7 @@ import logging
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from cloud.settings import MEDIA_ROOT, MEDIA_URL
+from cloud.settings import MEDIA_ROOT
 from .utils import get_user_directory_path
 
 logger = logging.getLogger('main')

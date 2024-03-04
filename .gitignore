@@ -1,3 +1,6 @@
 .env
 .idea
 storage
+nginx
+Dockerfile
+entrypoint.sh
