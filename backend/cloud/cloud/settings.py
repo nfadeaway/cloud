@@ -127,12 +127,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
-STATIC_ROOT = '/static/'
+STATIC_URL = '/django-static/'
+STATIC_ROOT = 'staticfiles'
 
 # Media files
 
-MEDIA_URL = f'/{os.getenv('CLOUD_DIR')}/'
+MEDIA_URL = f'/{os.getenv("CLOUD_DIR")}/'
 MEDIA_ROOT = os.path.join(BASE_DIR, os.getenv('CLOUD_DIR'))
 
 
@@ -161,19 +161,19 @@ SESSION_COOKIE_HTTPONLY = True
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
-    'http://0.0.0.0',
-    'http://localhost',
-    'http://127.0.0.1',
+    # 'http://0.0.0.0',
+    # 'http://localhost',
+    # 'http://127.0.0.1',
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
-    # 'http://localhost:5173',
-    # 'http://127.0.0.1:5173',
-    # 'http://127.0.0.1:4173',
-    'http://0.0.0.0',
-    'http://localhost',
-    'http://127.0.0.1',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:4173',
+    # 'http://0.0.0.0',
+    # 'http://localhost',
+    # 'http://127.0.0.1',
 ]
 
 # PROD ONLY

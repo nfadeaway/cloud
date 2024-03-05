@@ -129,7 +129,7 @@ class FileAPICreate(generics.CreateAPIView):
         uploaded_file_name = serializer.validated_data['content'].name
         uploaded_file_size = serializer.validated_data['content'].size
         serializer.save(filename=uploaded_file_name, size=uploaded_file_size)
-        logger.info(f'Пользователь {serializer.validated_data['cloud_user']} загрузил файл {serializer.validated_data['content'].name}')
+        logger.info(f'Пользователь {serializer.validated_data["cloud_user"]} загрузил файл {serializer.validated_data["content"].name}')
 
 
 class FileAPIRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
