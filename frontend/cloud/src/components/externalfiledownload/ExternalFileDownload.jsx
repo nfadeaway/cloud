@@ -13,11 +13,11 @@ const ExternalFileDownload = () => {
   const [dataDownloadFile, loadingDownloadFile, errorDownloadFile, requestDownloadFile] = useDownloadFile()
 
   const downloadFile = async () => {
-    await requestDownloadFile(location.pathname, {})
+    await requestDownloadFile(location.pathname, {credentials: 'include'})
   }
 
   useEffect(() => {
-    downloadFile()
+    !dataDownloadFile.status && downloadFile()
   }, [])
 
   return (
