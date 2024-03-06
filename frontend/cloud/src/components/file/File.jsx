@@ -45,8 +45,8 @@ const File = (props) => {
     setEditCommentFlag(!editCommentFlag)
   }
 
-  const copyLink = () => {
-    navigator.clipboard.writeText(externalLinkDiv.current.innerText)
+  const copyLink = async () => {
+    await navigator.clipboard.writeText(externalLinkDiv.current.innerText)
     shareImg.current.classList.toggle('hidden')
     copyImg.current.classList.toggle('hidden')
     setTimeout(() => {
