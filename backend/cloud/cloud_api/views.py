@@ -66,12 +66,8 @@ class UserLoginAPIView(APIView):
 class UserLogoutAPIView(APIView):
     @staticmethod
     def get(request, format=None):
-        if not request.user.is_authenticated:
-            logger.error(f'Попытка выхода из системы неаутентифицированного пользователя')
-            return Response({'detail': 'Пользователь не аутентифицирован'}, status=status.HTTP_400_BAD_REQUEST)
-
-        logger.info(f'Пользователь {request.user} вышел из системы')
         logout(request)
+        logger.info(f'Пользователь {request.user} вышел из системы')
 
         return Response({'detail': 'Успешный выход из системы.'}, status=status.HTTP_200_OK)
 
@@ -153,11 +149,10 @@ class FileAPIRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
             old_path = serializer.instance.content.path
             new_filename = serializer.validated_data['filename']
             content = serializer.instance.cloud_user.username + '/' + new_filename
-            os.rename(old_path, serializer.instance.content.storage.location + '\\' + serializer.instance.cloud_user.username + '\\' + new_filename)
+            os.rename(old_path, os.path.join(serializer.instance.content.storage.location, serializer.instance.cloud_user.username, new_filename))
             serializer.save(content=content)
             logger.info(f'Пользователь {self.request.user} изменил имя файла {old_name} на {new_filename}')
         else:
-            old_comment = serializer.instance.comment
             serializer.save()
             logger.info(f'Пользователь {self.request.user} изменил данные файла {serializer.instance.filename}')
 

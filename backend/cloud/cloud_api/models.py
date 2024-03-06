@@ -1,3 +1,4 @@
+import os
 import shutil
 import logging
 
@@ -14,7 +15,7 @@ class CloudUser(AbstractUser):
     storage_directory = models.CharField(max_length=100, blank=True)
 
     def delete_storage(self):
-        shutil.rmtree(MEDIA_ROOT + '\\' + self.storage_directory, ignore_errors=True)
+        shutil.rmtree(os.path.join(MEDIA_ROOT, str(self.storage_directory)), ignore_errors=True)
         logger.info(f'Директория пользователя {self.username} удалена')
 
     def __str__(self):
