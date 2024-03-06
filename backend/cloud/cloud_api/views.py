@@ -204,7 +204,7 @@ class FileAPIExternalDownload(generics.RetrieveAPIView):
             raise ValidationError(detail=f'Запись о файле c ключом {link_key} не найдена в базе данных')
         file_path = f'{MEDIA_ROOT}/{file.content}'
         if os.path.exists(file_path):
-            response = FileResponse(open(file_path, 'rb'))
+            response = FileResponse(open(file_path, 'rb'), as_attachment=True)
             response['Access-Control-Expose-Headers'] = 'Filename'
             response['Content-Disposition'] = f'attachment; filename="{file}"'
             response['Filename'] = file
