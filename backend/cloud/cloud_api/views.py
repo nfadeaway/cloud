@@ -202,7 +202,7 @@ class FileAPIExternalDownload(generics.RetrieveAPIView):
             file = self.queryset.get(external_link_key=link_key)
         except ObjectDoesNotExist:
             logger.error(f'Попытка скачать файл с внешним ключом {link_key}, который не найден в базе данных')
-            return redirect('download')
+            return redirect('/download')
             # raise ValidationError(detail=f'Запись о файле c ключом {link_key} не найдена в базе данных')
         file_path = f'{MEDIA_ROOT}/{file.content}'
         if os.path.exists(file_path):
@@ -216,7 +216,7 @@ class FileAPIExternalDownload(generics.RetrieveAPIView):
             return response
         else:
             logger.error(f'Попытка скачать файл, отсутствуещий по пути {file.content}')
-            return redirect('download')
+            return redirect('/download')
             # return Response({'detail': 'Файл не найден'}, status=status.HTTP_404_NOT_FOUND)
 
 
