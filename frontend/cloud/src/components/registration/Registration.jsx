@@ -16,6 +16,8 @@ const Registration = () => {
 
   const usernameInvalidDiv = useRef(null)
   const passwordInvalidDiv = useRef(null)
+  const usernameNoteDiv = useRef(null)
+  const passwordNoteDiv = useRef(null)
   const emailInvalidDiv = useRef(null)
 
   const navigate = useNavigate()
@@ -62,13 +64,16 @@ const Registration = () => {
                 ? <SystemMessage type="success" message="Успешная регистрация" />
                 :
                   <>
-                    <input onChange={(e) => setUsername(e.target.value)} value={username} className="registration-container__username-input input" type="text"
-                           placeholder="Имя пользователя" autoComplete="username" required />
+                    <input onFocus={() => usernameNoteDiv.current.style.opacity = '1'} onBlur={() => usernameNoteDiv.current.style.opacity = '0'} onChange={(e) => setUsername(e.target.value)} value={username} className="registration-container__username-input input" type="text"
+                          placeholder="Имя пользователя" autoComplete="username" required />
+                    <div ref={usernameNoteDiv} className="registration-container__username-note">Латинские буквы и цифры, первый символ — буква, длина от 4 до 20 символов</div>
                     <div ref={usernameInvalidDiv} className="registration-container__username-invalid hidden">
                       {dataRegistration.status === 400 && dataRegistration.result.username && dataRegistration.result.username[0]}
                     </div>
-                    <input onChange={(e) => setPassword(e.target.value)} value={password} className="registration-container__password-input input" type="password"
-                           placeholder="Пароль" autoComplete="new-password" required />
+
+                    <input onFocus={() => passwordNoteDiv.current.style.opacity = '1'} onBlur={() => passwordNoteDiv.current.style.opacity = '0'} onChange={(e) => setPassword(e.target.value)} value={password} className="registration-container__password-input input" type="password"
+                          placeholder="Пароль" autoComplete="new-password" required />
+                    <div ref={passwordNoteDiv} className="registration-container__password-note">Не менее 6 символов: минимум одна заглавная буква, одна цифра и один специальный символ</div>
                     <div ref={passwordInvalidDiv} className="registration-container__password-invalid hidden">
                       {dataRegistration.status === 400 && dataRegistration.result.password && dataRegistration.result.password[0]}
                     </div>

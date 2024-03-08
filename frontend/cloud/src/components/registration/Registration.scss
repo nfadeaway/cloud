@@ -6,6 +6,7 @@
   margin: auto;
 
   .registration-container__register-form {
+    position: relative;
     max-width: 360px;
     height: 260px;
     margin: 0 auto;
@@ -33,6 +34,46 @@
 
       &::first-letter {
         text-transform: uppercase;
+      }
+    }
+
+    .registration-container__username-note,
+    .registration-container__password-note {
+      position: absolute;
+      top: 45px;
+      right: -150px;
+      width: 125px;
+      padding: 5px;
+      text-align: left;
+      font-size: 10px;
+      border: 1px solid variables.$main_color;
+      background-color: variables.$main_bg_color;
+      opacity: 0;
+    }
+
+    .registration-container__password-note {
+      top: 105px;
+    }
+  }
+}
+
+@media (max-width: variables.$tablet) {
+
+  .registration-container {
+
+    .registration-container__register-form {
+
+      .registration-container__username-note {
+        top: -5px;
+        right: unset;
+        left: 45px;
+        opacity: 1;
+      }
+
+      .registration-container__password-note {
+        top: 44px;
+        right: unset;
+        left: 45px;
       }
     }
   }
