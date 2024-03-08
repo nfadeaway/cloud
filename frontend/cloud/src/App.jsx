@@ -68,7 +68,7 @@ function App() {
                   <Route element={<PrivateRoutes isAllowed={isAuthenticated} redirectPath = '/login' />}>
                     <Route path="/dashboard" element={<Dashboard />} exact />
                   </Route>
-                  <Route path="/f/*" element={<ExternalFileDownload />} />
+                  <Route path="/download" element={<ExternalFileDownload />} />
                   <Route path="*" element={<Navigate to='/' replace />} />
                 </Routes>
                 </CloudContext.Provider>
