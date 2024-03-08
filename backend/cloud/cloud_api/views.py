@@ -6,6 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.hashers import make_password
 from django.http import FileResponse
 from django.middleware.csrf import get_token
+from django.shortcuts import redirect
 from django.utils import timezone
 from rest_framework import generics, status
 from rest_framework.authentication import SessionAuthentication
@@ -214,7 +215,8 @@ class FileAPIExternalDownload(generics.RetrieveAPIView):
             return response
         else:
             logger.error(f'Файл отсутствует по пути {file.content}')
-            return Response({'detail': 'Файл не найден'}, status=status.HTTP_404_NOT_FOUND)
+            return redirect('download')
+            # return Response({'detail': 'Файл не найден'}, status=status.HTTP_404_NOT_FOUND)
 
 
 class FileAPICreateExternalLink(generics.RetrieveAPIView):
