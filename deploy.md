@@ -2,7 +2,7 @@
 
 При развёртывании на сервере используется связка `Django + gunicorn + nginx`.
 
-Весь последовательный план действий указан для операционной системы `Ubuntu 22.04 LTS`, чистая установка.
+Весь пошаговый план действий указан для операционной системы `Ubuntu 22.04 LTS`, чистая установка.
 
 Весь процесс будет описан для пользователя с именем `admin`, `*.*.*.*` - IP-адрес вашего сервера. 
 
@@ -138,7 +138,7 @@ sudo systemctl enable gunicorn
 sudo systemctl status gunicorn
 ```
 
-- В случае внесения исправлений в файл `gunicorn.service` нужно перезапускать сервис.
+- В случае внесения исправлений в файл `gunicorn.service` нужно перезапустить сервис.
 
 ```
 sudo systemctl daemon-reload
@@ -152,7 +152,7 @@ sudo systemctl status gunicorn
 
 `sudo cp /etc/nginx/sites-available/default /etc/nginx/sites-available/default.bak`
 
-- Открываем и редактируем файл настрок для нашего сервера.
+- Открываем и редактируем файл настроек для нашего сервера.
 
 `sudo nano /etc/nginx/sites-available/default`
 
